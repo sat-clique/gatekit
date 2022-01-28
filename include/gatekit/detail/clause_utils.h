@@ -17,6 +17,12 @@ auto to_var_index(Lit lit)
   return lit_traits<Lit>::to_var_index(lit);
 }
 
+template <typename Lit>
+auto negate(Lit lit)
+{
+  return lit_traits<Lit>::negate(lit);
+}
+
 template <typename ClauseHandle>
 auto get_lit(ClauseHandle clause, typename clause_traits<ClauseHandle>::size_type index) ->
     typename clause_traits<ClauseHandle>::lit
