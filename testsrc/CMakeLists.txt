@@ -1,6 +1,7 @@
 if (GATEKIT_ENABLE_TESTS)
   add_executable(gatekit-tests
     detail/blocked_set_tests.cpp
+    detail/collections_tests.cpp
     detail/occurrence_list_tests.cpp
   )
 
