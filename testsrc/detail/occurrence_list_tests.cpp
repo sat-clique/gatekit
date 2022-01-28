@@ -103,6 +103,8 @@ TEST(occurrence_list_tests, remove_nonunary_clauses)
 
   EXPECT_THAT(under_test[5], UnorderedElementsAre(&input3, &input4));
 
+  EXPECT_FALSE(under_test.empty());
+
   under_test.remove(&input1);
   under_test.remove(&input3);
   under_test.remove(&input4);
@@ -123,6 +125,7 @@ TEST(occurrence_list_tests, remove_unary_clauses)
 
   EXPECT_THAT(under_test[6], IsEmpty());
   EXPECT_THAT(under_test.get_unaries(), UnorderedElementsAre(5, -7));
+  EXPECT_FALSE(under_test.empty());
 }
 
 TEST(occurrence_list_tests, unknown_literals_do_not_occur)
