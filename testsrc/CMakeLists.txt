@@ -3,6 +3,10 @@ if (GATEKIT_ENABLE_TESTS)
     detail/blocked_set_tests.cpp
     detail/collections_tests.cpp
     detail/occurrence_list_tests.cpp
+
+    helpers/gate_factory.cpp
+
+    scanner_tests.cpp
   )
 
   target_link_libraries(gatekit-tests PRIVATE gatekit gtest gmock gmock_main)
