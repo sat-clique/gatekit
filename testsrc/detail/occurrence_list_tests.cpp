@@ -125,5 +125,11 @@ TEST(occurrence_list_tests, remove_unary_clauses)
   EXPECT_THAT(under_test.get_unaries(), UnorderedElementsAre(5, -7));
 }
 
+TEST(occurrence_list_tests, unknown_literals_do_not_occur)
+{
+  auto under_test = create_occurrence_list({});
+  EXPECT_THAT(under_test[6], IsEmpty());
+}
+
 }
 }

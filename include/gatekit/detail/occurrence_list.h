@@ -29,6 +29,10 @@ public:
 
   auto operator[](lit const& literal) const noexcept -> std::vector<ClauseHandle> const&
   {
+    if (to_index(literal) >= m_clauses_by_lit.size()) {
+      return m_empty_clauselist;
+    }
+
     return m_clauses_by_lit[to_index(literal)];
   }
 
@@ -96,6 +100,7 @@ private:
 
 
   std::vector<std::vector<ClauseHandle>> m_clauses_by_lit;
+  std::vector<ClauseHandle> m_empty_clauselist;
   std::vector<lit> m_unaries;
 };
 
