@@ -15,7 +15,7 @@ template <typename ClauseHandle>
 class occurrence_list {
 public:
   using lit = typename clause_traits<ClauseHandle>::lit;
-  using clause = ClauseHandle;
+  using clause_handle = ClauseHandle;
 
 
   template <typename ClauseHandleIter>
@@ -90,7 +90,7 @@ private:
         m_clauses_by_lit.resize(lit_index + 1);
       }
 
-      m_clauses_by_lit[lit_index].push_back(&*clause);
+      m_clauses_by_lit[lit_index].push_back(clause);
     }
 
     if (get_size(clause) == 1) {

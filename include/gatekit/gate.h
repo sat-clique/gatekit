@@ -31,7 +31,7 @@ struct gate_structure {
   using lit = typename clause_traits<Clause>::lit;
 
   std::vector<gate<Clause>> gates;
-  std::vector<lit> roots;
+  std::vector<std::vector<lit>> roots;
 };
 
 }

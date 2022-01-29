@@ -11,13 +11,14 @@
 #pragma once
 
 #include <cstdint>
+#include <type_traits>
 #include <utility>
 
 namespace gatekit {
 
 template <typename ClauseHandle>
 struct clause_traits {
-  using lit = int;
+  using lit = typename std::decay<decltype(*(std::declval<ClauseHandle>()->begin()))>::type;
   using size_type = std::size_t;
 
   static auto get(ClauseHandle clause, size_type index) -> lit { return (*clause)[index]; }

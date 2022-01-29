@@ -34,8 +34,8 @@ auto is_resolvent_tautologic(ClauseHandle lhs,
 template <typename OccList>
 auto is_blocked(typename OccList::lit lit, OccList const& clauses) -> bool
 {
-  for (auto const* fwd_clause : clauses[negate(lit)]) {
-    for (auto const* bwd_clause : clauses[lit]) {
+  for (auto const& fwd_clause : clauses[negate(lit)]) {
+    for (auto const& bwd_clause : clauses[lit]) {
       if (!is_resolvent_tautologic(fwd_clause, bwd_clause, lit)) {
         return false;
       }
