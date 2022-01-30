@@ -139,6 +139,7 @@ private:
       if (m_clauses_by_lit.size() <= lit_index) {
         m_clauses_by_lit.resize(lit_index + 1);
         m_clauses_to_remove.resize(lit_index + 1);
+        m_sorted.resize(lit_index + 1);
       }
 
       m_clauses_by_lit[lit_index].emplace_back(clause);
@@ -149,9 +150,29 @@ private:
     }
   }
 
+  using Hash = std::hash<ClauseHandle>;
+
+  static void sort_by_hash(std::vector<ClauseHandle>& vec)
+  {
+    Hash hasher;
+    std::sort(vec.begin(), vec.end(), [&hasher](ClauseHandle const& lhs, ClauseHandle const& rhs) {
+      return hasher(lhs) < hasher(rhs);
+    });
+  }
+
   void erase_clauses_to_remove(size_t index) const
   {
-    unstable_erase_first_all(m_clauses_by_lit[index], m_clauses_to_remove[index]);
+    occurrence_vec& occ_list = m_clauses_by_lit[index];
+    if (m_sorted[index] == 0) {
+      sort_by_hash(occ_list);
+      m_sorted[index] = 1;
+    }
+
+    occurrence_vec& to_remove = m_clauses_to_remove[index];
+    sort_by_hash(to_remove);
+
+    erase_all_hashsorted<ClauseHandle, Hash>(occ_list, to_remove);
+    to_remove.clear();
   }
 
   // As an optimization, m_clauses_by_lit and m_clauses_to_remove are
@@ -160,6 +181,7 @@ private:
   // mutable.
   mutable std::vector<std::vector<ClauseHandle>> m_clauses_by_lit;
   mutable std::vector<std::vector<ClauseHandle>> m_clauses_to_remove;
+  mutable std::vector<uint8_t> m_sorted;
 
   std::vector<ClauseHandle> m_empty_clauselist;
   std::vector<lit> m_unaries;
