@@ -194,6 +194,12 @@ private:
 
   void erase_clauses_to_remove(size_t index) const
   {
+    // In large SAT problem instances (for example 13pipe_k, GBD hash
+    // 772102b16ea3acaf7b516714b146b6ca), it is crucial to use a nearly-linear
+    // erasing algorithm. Using erase_all_hashsorted() instead of
+    // traversing the list and performing linear lookups in
+    // the list of clauses to be deleted doubled the speed of scan_gates().
+
     occ_list& to_update = m_occ_lists_by_lit[index];
 
     if (to_update.clauses_to_remove.empty()) {
