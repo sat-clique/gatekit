@@ -11,9 +11,6 @@
 #include <type_traits>
 #include <vector>
 
-#include <iostream>
-#include <unordered_set>
-
 namespace gatekit {
 namespace detail {
 
@@ -35,7 +32,7 @@ public:
 
   auto operator[](lit const& literal) const -> std::vector<ClauseHandle> const&
   {
-    if (to_index(literal) >= m_clauses_by_lit.size()) {
+    if (to_index(literal) >= m_occ_lists_by_lit.size()) {
       return m_empty_clauselist;
     }
 
@@ -44,13 +41,13 @@ public:
     // them eagerly.
     erase_clauses_to_remove(to_index(literal));
 
-    return m_clauses_by_lit[to_index(literal)];
+    return m_occ_lists_by_lit[to_index(literal)].clauses;
   }
 
 
   auto get_max_lit_index() const noexcept -> std::size_t
   {
-    return m_clauses_by_lit.empty() ? 0 : (m_clauses_by_lit.size() - 1);
+    return m_occ_lists_by_lit.empty() ? 0 : (m_occ_lists_by_lit.size() - 1);
   }
 
   auto get_unaries() const noexcept -> std::vector<lit> const& { return m_unaries; }
@@ -69,8 +66,9 @@ public:
     // the speed of scan_gates().
 
     for (auto literal : iterate(clause)) {
-      if (!m_clauses_by_lit[to_index(literal)].empty()) {
-        m_clauses_to_remove[to_index(literal)].push_back(clause);
+      auto& lit_occ_list = m_occ_lists_by_lit[to_index(literal)];
+      if (!lit_occ_list.clauses.empty()) {
+        lit_occ_list.clauses_to_remove.push_back(clause);
       }
     }
 
@@ -88,22 +86,25 @@ public:
 
   void remove_gate_root(lit output)
   {
-    occurrence_vec fwd = std::move(m_clauses_by_lit[to_index(output)]);
-    occurrence_vec bwd = std::move(m_clauses_by_lit[to_index(negate(output))]);
+    occ_list& fwd_occlist = m_occ_lists_by_lit[to_index(output)];
+    occ_list& bwd_occlist = m_occ_lists_by_lit[to_index(negate(output))];
 
-    m_clauses_by_lit[to_index(output)] = occurrence_vec{};
-    m_clauses_by_lit[to_index(negate(output))] = occurrence_vec{};
+    occurrence_vec fwd = std::move(fwd_occlist.clauses);
+    occurrence_vec bwd = std::move(bwd_occlist.clauses);
+
+    fwd_occlist.clauses = occurrence_vec{};
+    bwd_occlist.clauses = occurrence_vec{};
 
     remove_all(fwd);
     remove_all(bwd);
 
-    m_clauses_to_remove[to_index(output)].clear();
-    m_clauses_to_remove[to_index(negate(output))].clear();
+    fwd_occlist.clauses_to_remove.clear();
+    bwd_occlist.clauses_to_remove.clear();
   }
 
   void remove_unary(lit unary)
   {
-    unstable_erase_first_if(m_clauses_by_lit[to_index(unary)],
+    unstable_erase_first_if(m_occ_lists_by_lit[to_index(unary)].clauses,
                             [](ClauseHandle const& cl) { return get_size(cl) == 1; });
     unstable_erase_first(m_unaries, unary);
   }
@@ -111,12 +112,12 @@ public:
   auto empty() const -> bool
   {
     // This function is only used for testing ~> not optimized
-    for (size_t index = 0; index < m_clauses_by_lit.size(); ++index) {
+    for (size_t index = 0; index < m_occ_lists_by_lit.size(); ++index) {
       erase_clauses_to_remove(index);
     }
 
-    for (auto const& clauselist : m_clauses_by_lit) {
-      if (!clauselist.empty()) {
+    for (auto const& occlist : m_occ_lists_by_lit) {
+      if (!occlist.clauses.empty()) {
         return false;
       }
     }
@@ -126,8 +127,8 @@ public:
 
   auto get_estimated_lookup_cost(lit literal) const noexcept -> std::size_t
   {
-    return m_clauses_to_remove[to_index(literal)].size() +
-           m_clauses_to_remove[to_index(negate(literal))].size();
+    return m_occ_lists_by_lit[to_index(literal)].clauses_to_remove.size() +
+           m_occ_lists_by_lit[to_index(negate(literal))].clauses_to_remove.size();
   }
 
 private:
@@ -136,13 +137,11 @@ private:
     for (lit literal : iterate(clause)) {
       std::size_t const lit_index = to_index(literal);
 
-      if (m_clauses_by_lit.size() <= lit_index) {
-        m_clauses_by_lit.resize(lit_index + 1);
-        m_clauses_to_remove.resize(lit_index + 1);
-        m_sorted.resize(lit_index + 1);
+      if (m_occ_lists_by_lit.size() <= lit_index) {
+        m_occ_lists_by_lit.resize(lit_index + 1);
       }
 
-      m_clauses_by_lit[lit_index].emplace_back(clause);
+      m_occ_lists_by_lit[lit_index].clauses.emplace_back(clause);
     }
 
     if (get_size(clause) == 1) {
@@ -162,26 +161,34 @@ private:
 
   void erase_clauses_to_remove(size_t index) const
   {
-    occurrence_vec& occ_list = m_clauses_by_lit[index];
-    if (m_sorted[index] == 0) {
-      sort_by_hash(occ_list);
-      m_sorted[index] = 1;
+    occ_list& to_update = m_occ_lists_by_lit[index];
+
+    if (to_update.clauses_to_remove.empty()) {
+      return;
     }
 
-    occurrence_vec& to_remove = m_clauses_to_remove[index];
-    sort_by_hash(to_remove);
+    if (!to_update.is_sorted) {
+      sort_by_hash(to_update.clauses);
+      to_update.is_sorted = true;
+    }
 
-    erase_all_hashsorted<ClauseHandle, Hash>(occ_list, to_remove);
-    to_remove.clear();
+    sort_by_hash(to_update.clauses_to_remove);
+
+    erase_all_hashsorted<ClauseHandle, Hash>(to_update.clauses, to_update.clauses_to_remove);
+    to_update.clauses_to_remove.clear();
   }
 
-  // As an optimization, m_clauses_by_lit and m_clauses_to_remove are
-  // lazily updated in operator[], which is const (since it does
-  // not change observable state), so these members need to be
+  struct occ_list {
+    std::vector<ClauseHandle> clauses;           // all clauses in which a given literal occurs
+    std::vector<ClauseHandle> clauses_to_remove; // to be lazily removed from clauses
+    bool is_sorted = false;                      // true if `clauses` is currently sorted by hash
+  };
+
+  // As an optimization, `clauses_to_remove` are lazily removed from
+  // `clauses` in operator[], which is const (since it does
+  // not change observable state), so m_occ_lists_by_lit needs to be
   // mutable.
-  mutable std::vector<std::vector<ClauseHandle>> m_clauses_by_lit;
-  mutable std::vector<std::vector<ClauseHandle>> m_clauses_to_remove;
-  mutable std::vector<uint8_t> m_sorted;
+  mutable std::vector<occ_list> m_occ_lists_by_lit;
 
   std::vector<ClauseHandle> m_empty_clauselist;
   std::vector<lit> m_unaries;
