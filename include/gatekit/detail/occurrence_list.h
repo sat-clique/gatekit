@@ -142,8 +142,9 @@ private:
 
     for (ClauseHandleIter clause = start; clause != stop; ++clause) {
       for (lit literal : iterate(*clause)) {
-        if (num_occurrences.size() <= to_index(literal)) {
-          num_occurrences.resize(to_index(literal) + 1);
+
+        if (num_occurrences.size() <= max_index(literal)) {
+          num_occurrences.resize(max_index(literal) + 1);
         }
 
         ++num_occurrences[to_index(literal)];
@@ -170,8 +171,8 @@ private:
     for (lit literal : iterate(clause)) {
       std::size_t const lit_index = to_index(literal);
 
-      if (m_occ_lists_by_lit.size() <= lit_index) {
-        m_occ_lists_by_lit.resize(lit_index + 1);
+      if (m_occ_lists_by_lit.size() <= max_index(literal)) {
+        m_occ_lists_by_lit.resize(max_index(lit_index) + 1);
       }
 
       m_occ_lists_by_lit[lit_index].clauses.emplace_back(clause);

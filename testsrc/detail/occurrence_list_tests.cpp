@@ -49,7 +49,7 @@ TEST(occurrence_list_tests, single_clause)
   EXPECT_THAT(under_test[-2], UnorderedElementsAre(&input));
   EXPECT_THAT(under_test[3], UnorderedElementsAre(&input));
 
-  EXPECT_THAT(under_test.get_max_lit_index(), Eq(6));
+  EXPECT_THAT(under_test.get_max_lit_index(), Eq(7));
 }
 
 TEST(occurrence_list_tests, three_clauses)

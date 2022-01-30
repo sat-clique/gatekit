@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <gatekit/traits.h>
 
@@ -22,6 +23,12 @@ template <typename Lit>
 auto negate(Lit lit) -> Lit
 {
   return lit_traits<Lit>::negate(lit);
+}
+
+template <typename Lit>
+auto max_index(Lit lit) -> std::size_t
+{
+  return std::max(to_index(lit), to_index(negate(lit)));
 }
 
 template <typename ClauseHandle>
