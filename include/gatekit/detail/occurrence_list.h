@@ -24,6 +24,8 @@ public:
   template <typename ClauseHandleIter>
   occurrence_list(ClauseHandleIter start, ClauseHandleIter stop)
   {
+    reserve_occ_list_memory(start, stop);
+
     for (ClauseHandleIter current_clause = start; current_clause != stop; ++current_clause) {
       add_clause(*current_clause);
     }
@@ -132,6 +134,37 @@ public:
   }
 
 private:
+  template <typename ClauseHandleIter>
+  auto get_occurrence_counts(ClauseHandleIter start, ClauseHandleIter stop)
+      -> std::vector<std::size_t>
+  {
+    std::vector<size_t> num_occurrences;
+
+    for (ClauseHandleIter clause = start; clause != stop; ++clause) {
+      for (lit literal : iterate(*clause)) {
+        if (num_occurrences.size() <= to_index(literal)) {
+          num_occurrences.resize(to_index(literal) + 1);
+        }
+
+        ++num_occurrences[to_index(literal)];
+      }
+    }
+
+    return num_occurrences;
+  }
+
+  template <typename ClauseHandleIter>
+  void reserve_occ_list_memory(ClauseHandleIter start, ClauseHandleIter stop)
+  {
+    std::vector<std::size_t> num_occurrences = get_occurrence_counts(start, stop);
+
+    m_occ_lists_by_lit.resize(num_occurrences.size());
+
+    for (std::size_t index = 0; index < num_occurrences.size(); ++index) {
+      m_occ_lists_by_lit[index].clauses.reserve(num_occurrences[index]);
+    }
+  }
+
   void add_clause(ClauseHandle clause)
   {
     for (lit literal : iterate(clause)) {
