@@ -8,7 +8,6 @@
 #include <gatekit/traits.h>
 
 #include <algorithm>
-#include <unordered_set>
 
 namespace gatekit {
 namespace detail {
@@ -18,14 +17,19 @@ auto is_output_of_fully_encoded_gate(typename OccList::lit const& output, OccLis
     -> bool
 {
   // Assumption: `output` is blocked
+  //
+  // Note: this check rarely returns false (ca. 0.1% to 1.5% of all calls) since blockedness
+  // has already been checked. Unfortunately, the code may only err on the side
+  // of returning false.
 
   using lit = typename OccList::lit;
 
   auto const& fwd_clauses = clauses[negate(output)];
   auto const& bwd_clauses = clauses[output];
 
-  std::unordered_set<std::size_t> fwd_vars;
-  std::unordered_set<std::size_t> bwd_vars;
+
+  std::vector<std::size_t> fwd_vars;
+  std::vector<std::size_t> bwd_vars;
 
   std::size_t const output_var_index = to_var_index(output);
 
@@ -34,7 +38,9 @@ auto is_output_of_fully_encoded_gate(typename OccList::lit const& output, OccLis
       std::size_t const fwd_var_index = to_var_index(fwd_lit);
 
       if (fwd_var_index != output_var_index) {
-        fwd_vars.insert(to_var_index(fwd_lit));
+        if (std::find(fwd_vars.begin(), fwd_vars.end(), fwd_var_index) == fwd_vars.end()) {
+          fwd_vars.push_back(fwd_var_index);
+        }
       }
     }
   }
@@ -44,15 +50,21 @@ auto is_output_of_fully_encoded_gate(typename OccList::lit const& output, OccLis
       std::size_t const bwd_var_index = to_var_index(bwd_lit);
 
       if (bwd_var_index != output_var_index) {
-        if (std::find(fwd_vars.begin(), fwd_vars.end(), bwd_var_index) == fwd_vars.end()) {
-          return false;
+        if (std::find(bwd_vars.begin(), bwd_vars.end(), bwd_var_index) == bwd_vars.end()) {
+          bwd_vars.push_back(bwd_var_index);
         }
-        bwd_vars.insert(bwd_var_index);
       }
     }
   }
 
-  return fwd_vars.size() == bwd_vars.size();
+  if (fwd_vars.size() != bwd_vars.size()) {
+    return false;
+  }
+
+  std::sort(fwd_vars.begin(), fwd_vars.end());
+  std::sort(bwd_vars.begin(), bwd_vars.end());
+
+  return fwd_vars == bwd_vars;
 }
 
 template <typename OccList>
