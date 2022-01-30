@@ -16,7 +16,9 @@ else()
   option(GATEKIT_TEST_ENABLE_SANITIZERS "Enable sanitizers for tests" OFF)
   option(GATEKIT_BUILD_DOCS "Build Doxygen documentation" OFF)
 
-  set(CMAKE_CXX_STANDARD 17)
+  # gatekit needs to support C++11 since it is still used by solvers like CaDiCaL (as of 2022)
+  # and the SAT competition cluster tends to have antique compilers
+  set(CMAKE_CXX_STANDARD 11)
   set(CMAKE_CXX_EXTENSIONS OFF)
 
   if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")

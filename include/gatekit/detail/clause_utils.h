@@ -1,24 +1,25 @@
 #pragma once
 
+#include <cstddef>
 #include <gatekit/traits.h>
 
 namespace gatekit {
 namespace detail {
 
 template <typename Lit>
-auto to_index(Lit lit)
+auto to_index(Lit lit) -> std::size_t
 {
   return lit_traits<Lit>::to_index(lit);
 }
 
 template <typename Lit>
-auto to_var_index(Lit lit)
+auto to_var_index(Lit lit) -> std::size_t
 {
   return lit_traits<Lit>::to_var_index(lit);
 }
 
 template <typename Lit>
-auto negate(Lit lit)
+auto negate(Lit lit) -> Lit
 {
   return lit_traits<Lit>::negate(lit);
 }

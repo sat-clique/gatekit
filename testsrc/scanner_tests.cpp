@@ -17,6 +17,7 @@ using GateList = std::vector<gate<ClauseHandle>>;
 
 namespace {
 auto to_structure(std::vector<gate<ClauseHandle>>&& gates, std::vector<std::vector<int>>&& roots)
+    -> gate_structure<ClauseHandle>
 {
   gate_structure<ClauseHandle> result;
   result.gates = std::move(gates);
@@ -125,7 +126,7 @@ std::string iterable_to_string(Iterable const& iterable, ToStringFn&& to_string_
 template <typename Iterable>
 std::string iterable_to_string(Iterable const& iterable)
 {
-  using item_type = std::decay_t<decltype(*iterable.begin())>;
+  using item_type = typename std::decay<decltype(*iterable.begin())>::type;
 
   return iterable_to_string(iterable, [](item_type const& item) {
     using std::to_string;

@@ -17,7 +17,7 @@ namespace detail {
 using Clause = std::vector<int>;
 using ClauseHandle = Clause const*;
 
-auto create_occurrence_list(std::vector<ClauseHandle> clauses)
+auto create_occurrence_list(std::vector<ClauseHandle> clauses) -> occurrence_list<ClauseHandle>
 {
   return occurrence_list<ClauseHandle>{clauses.begin(), clauses.end()};
 }
