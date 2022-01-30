@@ -124,6 +124,12 @@ public:
     return true;
   }
 
+  auto get_estimated_lookup_cost(lit literal) const noexcept -> std::size_t
+  {
+    return m_clauses_to_remove[to_index(literal)].size() +
+           m_clauses_to_remove[to_index(negate(literal))].size();
+  }
+
 private:
   void add_clause(ClauseHandle clause)
   {

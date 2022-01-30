@@ -84,6 +84,14 @@ auto try_get_gate(typename OccList::lit const& output,
   return {};
 }
 
+template <typename Lit, typename OccList>
+void sort_by_estimated_access_cost(std::vector<Lit>& to_sort, OccList const& occs)
+{
+  std::sort(to_sort.begin(), to_sort.end(), [&occs](Lit const& lhs, Lit const& rhs) {
+    return occs.get_estimated_lookup_cost(lhs) < occs.get_estimated_lookup_cost(rhs);
+  });
+}
+
 template <typename ClauseHandle>
 void extend_gate_structure(gate_structure<ClauseHandle>& result,
                            occurrence_list<ClauseHandle>& occs,
@@ -98,6 +106,17 @@ void extend_gate_structure(gate_structure<ClauseHandle>& result,
   bool found_any = false;
 
   while (!current_candidates.empty()) {
+    // Preferring to access "cheap" literals first, causing removals to be performed in
+    // the occurrence list while it is cheap. This causes the cost of cheap
+    // occurrence_list<>::operator[]() to become even cheaper (most cases) and further
+    // increases the cost of expensive occurrence_list<>::operator[]() calls (rare
+    // enough).
+    //
+    // For 9dlx_vliw_at_b_iq8 (GBD hash be6bce96bab9cec47b58b6c68c9a1c89),
+    // this optimization causes a speedup of >30%, for 13pipe_k (GBD hash
+    // 772102b16ea3acaf7b516714b146b6ca) the speedup is ~10%.
+    sort_by_estimated_access_cost(current_candidates, occs);
+
     for (lit candidate : current_candidates) {
       bool const is_nonmono = inputs.contains(candidate) && inputs.contains(negate(candidate));
 
@@ -105,7 +124,7 @@ void extend_gate_structure(gate_structure<ClauseHandle>& result,
           try_get_gate(negate(candidate), occs, !is_nonmono);
 
       if (potential_gate.m_is_valid) {
-        occs.remove_all(potential_gate.m_gate.clauses);
+        occs.remove_gate_root(potential_gate.m_gate.output);
 
         next_candidates.add_all(potential_gate.m_gate.inputs);
         inputs.add_all(potential_gate.m_gate.inputs);
