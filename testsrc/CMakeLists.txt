@@ -4,6 +4,7 @@ if (GATEKIT_ENABLE_TESTS)
     detail/collections_tests.cpp
     detail/occurrence_list_tests.cpp
     detail/scanner_single_tests.cpp
+    detail/utils_tests.cpp
 
     helpers/gate_factory.cpp
 
