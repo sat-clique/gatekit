@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <gatekit/detail/scanner_impl.h>
+#include <gatekit/detail/scanner_structure.h>
 #include <gatekit/gate.h>
 
 namespace gatekit {

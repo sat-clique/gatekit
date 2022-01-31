@@ -1,6 +1,6 @@
 #include "gate_factory.h"
 
-#include <gatekit/detail/scanner_impl.h>
+#include <gatekit/detail/scanner_structure.h>
 #include <gatekit/gate.h>
 
 #include <algorithm>

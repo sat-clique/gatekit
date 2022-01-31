@@ -4,7 +4,7 @@
 #include <gatekit/detail/clause_utils.h>
 #include <gatekit/detail/collections.h>
 #include <gatekit/detail/occurrence_list.h>
-#include <gatekit/detail/scanner_single.h>
+#include <gatekit/detail/scanner_gate.h>
 
 #include <gatekit/gate.h>
 #include <gatekit/traits.h>

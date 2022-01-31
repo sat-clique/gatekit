@@ -1,5 +1,5 @@
 #include <gatekit/detail/occurrence_list.h>
-#include <gatekit/detail/scanner_single.h>
+#include <gatekit/detail/scanner_gate.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -19,7 +19,7 @@ enum class is_gate { yes, no };
 using is_gate_output_test_param = std::tuple<std::string, // description
                                              ClauseList,  // clauses in occurrence list
                                              int,         // output literal
-                                             bool,        // nested-monotonic flag
+                                             bool,        // scan as monotonically nested gate
                                              is_gate      // expected result
                                              >;
 
