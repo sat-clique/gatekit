@@ -99,6 +99,24 @@ void extend_gate_structure(gate_structure<ClauseHandle>& result,
 {
   using lit = typename clause_traits<ClauseHandle>::lit;
 
+  // Basic algorithm:
+  //
+  // The gate structure is scanned using BFS. The inputs of gates
+  // discovered in the current round are used as current_candidates
+  // in the next round. Initially, only the root literal is a candidate.
+  // When a gate is found, its clauses are removed from the occurrence
+  // lists, and the search continues.
+  //
+  // If no gate is found for a given element X of current_candidates,
+  // X is either really not the output of a gate (then, we can ignore
+  // it), or it is the output of a gate that cannot be recognized by
+  // the current implementation (~> also ignored), or it could be
+  // recognized but is used as input of some gate that needs to be
+  // recovered first, causing the occurrence lists of ~X and X to
+  // contain clauses of other gates. In that case, X automatically
+  // becomes a candidate again when the last gate having X or ~X as
+  // input has been recovered.
+
   std::vector<lit> current_candidates = {root};
   literal_set<lit> next_candidates{occs.get_max_lit_index()};
   literal_set<lit> inputs{occs.get_max_lit_index()};
