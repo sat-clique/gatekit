@@ -136,9 +136,10 @@ void extend_gate_structure(gate_structure<ClauseHandle>& result,
     sort_by_estimated_access_cost(current_candidates, occs);
 
     for (lit candidate : current_candidates) {
-      bool const is_nonmono = inputs.contains(candidate) && inputs.contains(negate(candidate));
+      bool const is_nested_mono =
+          !(inputs.contains(candidate) && inputs.contains(negate(candidate)));
 
-      optional_gate<ClauseHandle> potential_gate = try_get_gate(candidate, occs, !is_nonmono);
+      optional_gate<ClauseHandle> potential_gate = try_get_gate(candidate, occs, is_nested_mono);
 
       if (potential_gate.m_is_valid) {
         occs.remove_gate_root(potential_gate.m_gate.output);
