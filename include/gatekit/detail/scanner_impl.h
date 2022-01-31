@@ -120,8 +120,7 @@ void extend_gate_structure(gate_structure<ClauseHandle>& result,
     for (lit candidate : current_candidates) {
       bool const is_nonmono = inputs.contains(candidate) && inputs.contains(negate(candidate));
 
-      optional_gate<ClauseHandle> potential_gate =
-          try_get_gate(negate(candidate), occs, !is_nonmono);
+      optional_gate<ClauseHandle> potential_gate = try_get_gate(candidate, occs, !is_nonmono);
 
       if (potential_gate.m_is_valid) {
         occs.remove_gate_root(potential_gate.m_gate.output);

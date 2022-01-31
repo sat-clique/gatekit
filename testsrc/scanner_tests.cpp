@@ -176,7 +176,7 @@ auto operator<<(std::ostream& stream, gate_structure<ClauseHandle> const& to_dum
 
 
 using scanner_test_param = std::tuple<
-    std::string,                  //description
+    std::string,                  // Description
     gate_structure<ClauseHandle>, // Test input. Clauses used as scanner input and expected output.
     ClauseList                    // additional scanner input clauses, should be ignored in output
     >;
@@ -230,40 +230,40 @@ INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
     std::make_tuple("empty", to_structure({}, {}), ClauseList{}),
 
     std::make_tuple("single gate, monotonously nested, not fully encoded, single root, no side problem",
-      to_structure({monotonic(and_gate({2, 3, 4}, 1))}, {{-1}}), ClauseList{}),
+      to_structure({monotonic(and_gate({2, 3, 4}, 1))}, {{1}}), ClauseList{}),
 
     std::make_tuple("single gate, monotonously nested, fully encoded, single root, no side problem",
-      to_structure({monotonic(and_gate({2, 3, 4}, 1), encoding::full)}, {{-1}}), ClauseList{}),
+      to_structure({monotonic(and_gate({2, 3, 4}, 1), encoding::full)}, {{1}}), ClauseList{}),
 
     std::make_tuple("multiple gates, monotonously nested, single root, no side problem, distinct inputs (1)",
       to_structure({
-        monotonic(or_gate({-21, 22, 23}, -10)),
+        monotonic(or_gate({-21, 22, 23}, 10)),
           monotonic(and_gate({31, -32}, 22)),
           monotonic(xor_gate(41, 42, 23))
-      }, {{-10}}),
+      }, {{10}}),
       ClauseList{}),
 
     std::make_tuple("multiple gates, monotonously nested, single root, no side problem, distinct inputs (2)",
       to_structure({
-        monotonic(or_gate({-21, 22, 23}, -10), encoding::full),
+        monotonic(or_gate({-21, 22, 23}, 10), encoding::full),
           monotonic(and_gate({31, -32}, 22)),
           monotonic(xor_gate(41, 42, 23))
-      }, {{-10}}),
+      }, {{10}}),
       ClauseList{}),
 
     std::make_tuple("multiple gates, single root, no side problem, distinct inputs (1)",
       to_structure({
-        monotonic(or_gate({-21, 22, 23}, -10), encoding::full),
+        monotonic(or_gate({-21, 22, 23}, 10), encoding::full),
           monotonic(and_gate({31, -32}, 22)),
           monotonic(xor_gate(41, 42, 23)),
             and_gate({51, 52}, 42),
             xor_gate(61, 62, 41)
-      }, {{-10}}),
+      }, {{10}}),
       ClauseList{}),
 
     std::make_tuple("multiple gates, single root, no side problem, distinct inputs (2)",
       to_structure({
-        monotonic(xor_gate(21, 22, 10), encoding::full),
+        monotonic(xor_gate(21, 22, -10), encoding::full),
           and_gate({31, 32}, 21),
             and_gate({41, 42}, 31)
       }, {{-10}}),

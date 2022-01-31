@@ -46,12 +46,15 @@ auto and_gate(std::vector<int> const& inputs, int output) -> gate<ClauseHandle>
 
 auto or_gate(std::vector<int> const& inputs, int output) -> gate<ClauseHandle>
 {
-  std::vector<int> neg_inputs = inputs;
-  for (int& input : neg_inputs) {
-    input *= -1;
+  std::vector<int> fwd_clause = {-output};
+  std::vector<std::vector<int>> bwd_clauses;
+
+  for (int input : inputs) {
+    fwd_clause.push_back(input);
+    bwd_clauses.push_back({-input, output});
   }
 
-  return and_gate(neg_inputs, -output);
+  return create_gate({fwd_clause}, bwd_clauses, output);
 }
 
 auto xor_gate(int lhs, int rhs, int output) -> gate<ClauseHandle>
