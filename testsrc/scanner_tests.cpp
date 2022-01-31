@@ -229,13 +229,13 @@ INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
   ::testing::Values(
     std::make_tuple("empty", to_structure({}, {}), ClauseList{}),
 
-    std::make_tuple("single gate, monotonously nested, not fully encoded, single root, no side problem",
+    std::make_tuple("single gate, monotonically nested, not fully encoded, single root, no side problem",
       to_structure({monotonic(and_gate({2, 3, 4}, 1))}, {{1}}), ClauseList{}),
 
-    std::make_tuple("single gate, monotonously nested, fully encoded, single root, no side problem",
+    std::make_tuple("single gate, monotonically nested, fully encoded, single root, no side problem",
       to_structure({monotonic(and_gate({2, 3, 4}, 1), encoding::full)}, {{1}}), ClauseList{}),
 
-    std::make_tuple("multiple gates, monotonously nested, single root, no side problem, distinct inputs (1)",
+    std::make_tuple("multiple gates, monotonically nested, single root, no side problem, distinct inputs (1)",
       to_structure({
         monotonic(or_gate({-21, 22, 23}, 10)),
           monotonic(and_gate({31, -32}, 22)),
@@ -243,7 +243,7 @@ INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
       }, {{10}}),
       ClauseList{}),
 
-    std::make_tuple("multiple gates, monotonously nested, single root, no side problem, distinct inputs (2)",
+    std::make_tuple("multiple gates, monotonically nested, single root, no side problem, distinct inputs (2)",
       to_structure({
         monotonic(or_gate({-21, 22, 23}, 10), encoding::full),
           monotonic(and_gate({31, -32}, 22)),
