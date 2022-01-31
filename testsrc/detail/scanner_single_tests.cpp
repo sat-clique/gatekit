@@ -57,7 +57,14 @@ INSTANTIATE_TEST_SUITE_P(is_gate_output_tests, is_gate_output_tests,
     std::make_tuple("lone AND gate minus 1 clause is not gate", ClauseList{{1, -2, -3}, {-1, 2}}, 1, false, is_gate::no),
     std::make_tuple("lone AND gate with additional output unary is not gate", ClauseList{{1, -2, -3}, {-1, 2}, {-1, 3}, {1}}, 1, false, is_gate::no),
     std::make_tuple("lone AND gate with additional input unary is not gate", ClauseList{{1, -2, -3}, {-1, 2}, {-1, 3}, {-3}}, 1, false, is_gate::yes),
-    std::make_tuple("nonmonotonously nested, optimized AND gate with flipped output is not gate", ClauseList{{1, -2, -3}}, 1, true, is_gate::no)
+    std::make_tuple("monotonously nested, optimized AND gate with flipped output is not gate", ClauseList{{1, -2, -3}}, 1, true, is_gate::no),
+
+    std::make_tuple("nonmonotonously nested XOR gate is gate", ClauseList{{1, -2, 3}, {-1, 2, 3}, {-1, -2, -3}, {1, 2, -3}}, 3, false, is_gate::yes),
+    std::make_tuple("full gate simplified with self-subsuming resolution is gate", ClauseList{{-3, -4, -5}, {4, -5}, {3, -4, 5}}, 5, false, is_gate::yes),
+    std::make_tuple("full gate simplified with self-subsuming resolution, but missing a clause is not gate",
+      ClauseList{{-3, -4, -5}, {3, -4, 5}}, 5, false, is_gate::no),
+
+    std::make_tuple("half a gate is not gate", ClauseList{{1, -2, -3}, {-1, -2, 3}}, 3, false, is_gate::no)
 ));
 // clang-format on
 }

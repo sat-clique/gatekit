@@ -8,13 +8,14 @@
 #include <gatekit/traits.h>
 
 #include <algorithm>
+#include <vector>
 
 namespace gatekit {
 namespace detail {
 
 template <typename OccList>
-auto is_output_of_fully_encoded_gate(typename OccList::lit const& output, OccList const& clauses)
-    -> bool
+auto try_get_gate_inputs(typename OccList::lit const& output, OccList const& clauses)
+    -> std::vector<std::size_t>
 {
   // Assumption: `output` is blocked
   //
@@ -26,7 +27,6 @@ auto is_output_of_fully_encoded_gate(typename OccList::lit const& output, OccLis
 
   auto const& fwd_clauses = clauses[negate(output)];
   auto const& bwd_clauses = clauses[output];
-
 
   std::vector<std::size_t> fwd_vars;
   std::vector<std::size_t> bwd_vars;
@@ -58,13 +58,147 @@ auto is_output_of_fully_encoded_gate(typename OccList::lit const& output, OccLis
   }
 
   if (fwd_vars.size() != bwd_vars.size()) {
-    return false;
+    return {};
   }
 
   std::sort(fwd_vars.begin(), fwd_vars.end());
   std::sort(bwd_vars.begin(), bwd_vars.end());
 
-  return fwd_vars == bwd_vars;
+  if (fwd_vars == bwd_vars) {
+    return fwd_vars;
+  }
+  else {
+    return {};
+  }
+}
+
+template <typename ClauseHandle>
+auto are_all_of_size(std::vector<ClauseHandle> const& clauses, std::size_t size) -> bool
+{
+  return std::all_of(clauses.begin(), clauses.end(), [size](ClauseHandle const& clause) {
+    return get_size(clause) == size;
+  });
+}
+
+template <typename ClauseHandle>
+auto get_num_covered_input_combinations(std::vector<ClauseHandle> const& clauses,
+                                        std::size_t num_inputs) -> uint64_t
+{
+  uint64_t result = 0;
+
+  for (ClauseHandle clause : clauses) {
+    result += 1ull << (num_inputs + 1 - get_size(clause));
+  }
+
+  return result;
+}
+
+template <typename ClauseHandle>
+auto is_joined_clause_taut(ClauseHandle const& lhs, ClauseHandle const& rhs) -> bool
+{
+  for (auto const& lit_lhs : iterate(lhs)) {
+    for (auto const& lit_rhs : iterate(rhs)) {
+      if (lit_lhs == negate(lit_rhs)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+
+template <typename ClauseHandle>
+auto are_pairwise_joined_clauses_all_taut(std::vector<ClauseHandle> const& clauses,
+                                          std::size_t num_inputs) -> bool
+{
+  for (ClauseHandle const& lhs : clauses) {
+    if (get_size(lhs) == num_inputs + 1) {
+      continue;
+    }
+
+    for (ClauseHandle const& rhs : clauses) {
+      if (&lhs == &rhs || get_size(rhs) == num_inputs + 1) {
+        continue;
+      }
+
+      if (!is_joined_clause_taut(lhs, rhs)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+
+template <typename OccList>
+auto is_matching_gate_pattern(typename OccList::lit const& output,
+                              OccList const& clauses,
+                              std::vector<size_t> const& inputs) -> bool
+{
+  using ClauseHandle = typename OccList::clause_handle;
+
+  std::vector<ClauseHandle> const& fwd = clauses[negate(output)];
+  std::vector<ClauseHandle> const& bwd = clauses[output];
+  std::vector<ClauseHandle> const* larger_list = (fwd.size() > bwd.size()) ? &fwd : &bwd;
+
+  // Detect and/or gates: if fwd (rsp. bwd) contains only a single clause S,
+  // all input variables must occur in that clause. If the other set contains
+  // only 2-clauses, blockedness guarantees that for each input literal a
+  // in S, there is a clause (-a, -output) (rsp. (-a output)) in the other
+  // set.
+  if ((fwd.size() == 1 || bwd.size() == 1) && are_all_of_size(*larger_list, 2)) {
+    return true;
+  }
+
+  // Detect gates in which each input assignment causes exactly one clause
+  // to propagate the output. XOR gates and gates with one clause for each
+  // possible input assignment are special cases of this class of encoded
+  // gates.
+  //
+  // Additionally, this matcher recognizes gate encodings in which literals
+  // are omitted from clauses via self-subsuming resolution (i.e. because
+  // they are don't-cares relative to some partial assignment of inputs),
+  // like
+  //    (a, b, -o)
+  //      (-b, -o)
+  //   (-a, b,  o)
+  // where the assignment of `a` is irrelevant for `o` when `b` is `true`.
+  //
+  // The basic idea of the check is to compute the number of different input
+  // assignment "covered" by each clause and comparing it to the total
+  // number of different input assignments for the gate. Also, if A u B is
+  // tautologic for each two distinct clauses A, B in the gate encoding,
+  // each input causes a single gate in the clause to propagate the output.
+  std::size_t const num_inputs = inputs.size();
+  if (num_inputs <= 63) {
+    uint64_t const num_total_input_combinations = (1ull << num_inputs);
+    uint64_t const num_covered_input_combinations =
+        get_num_covered_input_combinations(fwd, num_inputs) +
+        get_num_covered_input_combinations(bwd, num_inputs);
+
+    if (num_covered_input_combinations == num_total_input_combinations) {
+      // If a clause contains A contains x and B contains -x, they
+      // cannot propagate their output literal at the same time. fwd
+      // and bwd can be checked separately because blockedness already
+      // guarantees right-uniqueness.
+      if (are_pairwise_joined_clauses_all_taut(fwd, num_inputs) &&
+          are_pairwise_joined_clauses_all_taut(bwd, num_inputs)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+template <typename OccList>
+auto is_output_of_fully_encoded_gate(typename OccList::lit const& output, OccList const& clauses)
+    -> bool
+{
+  std::vector<size_t> inputs = try_get_gate_inputs(output, clauses);
+  return !inputs.empty() && is_matching_gate_pattern(output, clauses, inputs);
 }
 
 template <typename OccList>
