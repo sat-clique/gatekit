@@ -7,7 +7,7 @@ get_directory_property(has_been_added_via_add_subdirectory PARENT_DIRECTORY)
 
 if(has_been_added_via_add_subdirectory)
   add_library(gatekit INTERFACE)
-  target_include_directories(gatekit::gatekit INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+  target_include_directories(gatekit INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 else()
   # Building in standalone mode, ie. this is not included via add_subdirectory()
   # in another project
