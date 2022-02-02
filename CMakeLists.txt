@@ -3,10 +3,10 @@ cmake_policy(VERSION 3.12)
 
 project(gatekit VERSION 0.1.0)
 
-if (NOT CMAKE_CURRENT_LIST_DIR STREQUAL CMAKE_SOURCE_DIR)
-  # This has been added via add_subdirectory()
+get_directory_property(has_been_added_via_add_subdirectory PARENT_DIRECTORY)
 
-  add_library(gatekit::gatekit INTERFACE IMPORTED)
+if(has_been_added_via_add_subdirectory)
+  add_library(gatekit INTERFACE)
   target_include_directories(gatekit::gatekit INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 else()
   # Building in standalone mode, ie. this is not included via add_subdirectory()
@@ -40,7 +40,7 @@ else()
 
   install(DIRECTORY include/gatekit DESTINATION include)
   install(TARGETS gatekit EXPORT gatekit INCLUDES DESTINATION include)
-  install(EXPORT gatekit NAMESPACE gatekit:: DESTINATION lib/cmake/gatekit FILE "gatekitConfig.cmake")
+  install(EXPORT gatekit DESTINATION lib/cmake/gatekit FILE "gatekitConfig.cmake")
 
   add_subdirectory(doc)
   add_subdirectory(testdeps)
