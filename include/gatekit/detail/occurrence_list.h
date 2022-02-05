@@ -183,21 +183,11 @@ private:
     }
   }
 
-  using Hash = std::hash<ClauseHandle>;
-
-  static void sort_by_hash(std::vector<ClauseHandle>& vec)
-  {
-    Hash hasher;
-    std::sort(vec.begin(), vec.end(), [&hasher](ClauseHandle const& lhs, ClauseHandle const& rhs) {
-      return hasher(lhs) < hasher(rhs);
-    });
-  }
-
   void erase_clauses_to_remove(size_t index) const
   {
     // In large SAT problem instances (for example 13pipe_k, GBD hash
     // 772102b16ea3acaf7b516714b146b6ca), it is crucial to use a nearly-linear
-    // erasing algorithm. Using erase_all_hashsorted() instead of
+    // erasing algorithm. Using erase_all_sorted() instead of
     // traversing the list and performing linear lookups in
     // the list of clauses to be deleted doubled the speed of scan_gates().
 
@@ -208,13 +198,15 @@ private:
     }
 
     if (!to_update.is_sorted) {
-      sort_by_hash(to_update.clauses);
+      std::sort(to_update.clauses.begin(), to_update.clauses.end(), std::less<ClauseHandle>{});
       to_update.is_sorted = true;
     }
 
-    sort_by_hash(to_update.clauses_to_remove);
+    std::sort(to_update.clauses_to_remove.begin(),
+              to_update.clauses_to_remove.end(),
+              std::less<ClauseHandle>{});
 
-    erase_all_hashsorted<ClauseHandle, Hash>(to_update.clauses, to_update.clauses_to_remove);
+    erase_all_sorted<ClauseHandle>(to_update.clauses, to_update.clauses_to_remove);
     to_update.clauses_to_remove.clear();
   }
 

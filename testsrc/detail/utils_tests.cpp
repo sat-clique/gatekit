@@ -50,29 +50,12 @@ TEST_P(erase_functions_tests, unstable_erase_first_all_many_suite)
   EXPECT_THAT(m_to_erase_from, ::testing::UnorderedElementsAreArray(m_expected_result));
 }
 
-TEST_P(erase_functions_tests, erase_all_hashsorted_suite_default)
+TEST_P(erase_functions_tests, erase_all_sorted_suite_default)
 {
-  using Hash = std::hash<int>;
-  auto hash_compare = [](int lhs, int rhs) { return Hash{}(lhs) < Hash{}(rhs); };
-  std::sort(m_to_erase.begin(), m_to_erase.end(), hash_compare);
-  std::sort(m_to_erase_from.begin(), m_to_erase_from.end(), hash_compare);
+  std::sort(m_to_erase.begin(), m_to_erase.end());
+  std::sort(m_to_erase_from.begin(), m_to_erase_from.end());
 
-  erase_all_hashsorted<int, Hash>(m_to_erase_from, m_to_erase);
-
-  EXPECT_THAT(m_to_erase_from, ::testing::UnorderedElementsAreArray(m_expected_result));
-}
-
-TEST_P(erase_functions_tests, erase_all_hashsorted_suite_conflicts)
-{
-  struct BadHash {
-    auto operator()(int value) noexcept -> size_t { return value / 3; }
-  };
-
-  auto hash_compare = [](int lhs, int rhs) { return BadHash{}(lhs) < BadHash{}(rhs); };
-  std::sort(m_to_erase.begin(), m_to_erase.end(), hash_compare);
-  std::sort(m_to_erase_from.begin(), m_to_erase_from.end(), hash_compare);
-
-  erase_all_hashsorted<int, BadHash>(m_to_erase_from, m_to_erase);
+  erase_all_sorted<int>(m_to_erase_from, m_to_erase);
 
   EXPECT_THAT(m_to_erase_from, ::testing::UnorderedElementsAreArray(m_expected_result));
 }
