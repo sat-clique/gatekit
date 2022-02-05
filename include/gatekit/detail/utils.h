@@ -1,7 +1,11 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
+#include <functional>
+#include <memory>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace gatekit {
@@ -186,5 +190,30 @@ void erase_all_hashsorted(std::vector<T>& container, std::vector<T> const& to_er
   container.erase(container_new_end, container.end());
 }
 
+
+template <typename T>
+using unique_aligned_array_ptr = std::unique_ptr<T, std::function<void(T)>>;
+
+template <typename T>
+auto allocate_aligned(std::size_t num_objs) -> unique_aligned_array_ptr<T>
+{
+  uintptr_t const alignment = alignof(T);
+
+  char* const raw_mem = new char[sizeof(T) * num_objs + alignment];
+  uintptr_t const offset = alignment - (reinterpret_cast<uintptr_t>(raw_mem) % alignment);
+  T* aligned_mem = reinterpret_cast<T[]>(raw_mem + offset);
+
+  for (std::size_t i = 0; i < num_objs; ++i) {
+    new (aligned_mem + i) T{};
+  }
+
+  return unique_aligned_array_ptr<T>{aligned_mem, [raw_mem, num_objs](T* to_dealloc) {
+                                       for (std::size_t i = 0; i < num_objs; ++i) {
+                                         to_dealloc[i].~T();
+                                       }
+
+                                       delete[](raw_mem);
+                                     }};
+}
 }
 }
