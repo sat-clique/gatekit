@@ -16,12 +16,16 @@ class alignas(Alignment) bitvector {
 public:
   using words_t = std::array<uint64_t, Bits / 64>;
 
+  bitvector() { fill(0ull); }
+
   auto operator~() const noexcept -> bitvector
   {
     bitvector result;
     for (std::size_t idx = 0; idx < m_vars.size(); ++idx) {
       result.m_vars[idx] = ~m_vars[idx];
     }
+
+    return result;
   }
 
   auto operator|(bitvector const& rhs) const noexcept -> bitvector
@@ -30,6 +34,8 @@ public:
     for (std::size_t idx = 0; idx < m_vars.size(); ++idx) {
       result.m_vars[idx] = m_vars[idx] | rhs.m_vars[idx];
     }
+
+    return result;
   }
 
   auto operator&(bitvector const& rhs) const noexcept -> bitvector
@@ -38,6 +44,8 @@ public:
     for (std::size_t idx = 0; idx < m_vars.size(); ++idx) {
       result.m_vars[idx] = m_vars[idx] & rhs.m_vars[idx];
     }
+
+    return result;
   }
 
   auto operator^(bitvector const& rhs) const noexcept -> bitvector
@@ -46,6 +54,8 @@ public:
     for (std::size_t idx = 0; idx < m_vars.size(); ++idx) {
       result.m_vars[idx] = m_vars[idx] ^ rhs.m_vars[idx];
     }
+
+    return result;
   }
 
   auto operator|=(bitvector const& rhs) noexcept -> bitvector&
@@ -53,6 +63,8 @@ public:
     for (std::size_t idx = 0; idx < m_vars.size(); ++idx) {
       m_vars[idx] |= rhs.m_vars[idx];
     }
+
+    return *this;
   }
 
   auto operator&=(bitvector const& rhs) noexcept -> bitvector&
@@ -60,6 +72,8 @@ public:
     for (std::size_t idx = 0; idx < m_vars.size(); ++idx) {
       m_vars[idx] &= rhs.m_vars[idx];
     }
+
+    return *this;
   }
 
   auto operator^=(bitvector const& rhs) noexcept -> bitvector&
@@ -67,6 +81,8 @@ public:
     for (std::size_t idx = 0; idx < m_vars.size(); ++idx) {
       m_vars[idx] ^= rhs.m_vars[idx];
     }
+
+    return *this;
   }
 
   auto operator==(bitvector const& rhs) const noexcept -> bool
@@ -80,19 +96,14 @@ public:
 
   auto get_words() noexcept -> words_t& { return m_vars; }
 
-  static auto ones() noexcept -> bitvector
-  {
-    bitvector result;
-    for (auto& word : result.m_vars) {
-      word = ~static_cast<uint64_t>(0);
-    }
-  }
+  static auto ones() noexcept -> bitvector { return bitvector{~static_cast<uint64_t>(0)}; }
 
-  static auto zeros() noexcept -> bitvector
+  static auto zeros() noexcept -> bitvector { return bitvector{0ull}; }
+
+  void fill(uint64_t value) noexcept
   {
-    bitvector result;
-    for (auto& word : result.m_vars) {
-      word = 0ull;
+    for (auto& word : m_vars) {
+      word = value;
     }
   }
 
@@ -102,7 +113,7 @@ public:
   bitvector(bitvector&&) noexcept = default;
 
 private:
-  bitvector() = default;
+  explicit bitvector(uint64_t value) { fill(value); }
 
   std::array<uint64_t, Bits / 64> m_vars;
 };
@@ -113,18 +124,18 @@ class bitvector_map {
 public:
   using bitvector_t = bitvector<Bits, Alignment>;
 
-  bitvector_map(std::size_t size) { m_bitvectors = allocate_aligned<bitvector_t>(size); }
+  explicit bitvector_map(std::size_t size) { m_bitvectors = allocate_aligned<bitvector_t>(size); }
 
   auto operator[](std::size_t index) noexcept -> bitvector_t&
   {
     assert(index < m_size);
-    return m_bitvectors[index];
+    return m_bitvectors.get()[index];
   }
 
   auto operator[](std::size_t index) const noexcept -> bitvector_t const&
   {
     assert(index < m_size);
-    return m_bitvectors[index];
+    return m_bitvectors.get()[index];
   }
 
 private:

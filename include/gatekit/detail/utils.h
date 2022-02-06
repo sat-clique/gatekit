@@ -162,7 +162,7 @@ void erase_all_sorted(std::vector<T>& container, std::vector<T> const& to_erase)
 
 
 template <typename T>
-using unique_aligned_array_ptr = std::unique_ptr<T, std::function<void(T)>>;
+using unique_aligned_array_ptr = std::unique_ptr<T, std::function<void(T*)>>;
 
 template <typename T>
 auto allocate_aligned(std::size_t num_objs) -> unique_aligned_array_ptr<T>
@@ -171,7 +171,7 @@ auto allocate_aligned(std::size_t num_objs) -> unique_aligned_array_ptr<T>
 
   char* const raw_mem = new char[sizeof(T) * num_objs + alignment];
   uintptr_t const offset = alignment - (reinterpret_cast<uintptr_t>(raw_mem) % alignment);
-  T* aligned_mem = reinterpret_cast<T[]>(raw_mem + offset);
+  T* aligned_mem = reinterpret_cast<T*>(raw_mem + offset);
 
   for (std::size_t i = 0; i < num_objs; ++i) {
     new (aligned_mem + i) T{};
