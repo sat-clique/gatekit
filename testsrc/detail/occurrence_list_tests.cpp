@@ -49,7 +49,7 @@ TEST(occurrence_list_tests, single_clause)
   EXPECT_THAT(under_test[-2], UnorderedElementsAre(&input));
   EXPECT_THAT(under_test[3], UnorderedElementsAre(&input));
 
-  EXPECT_THAT(under_test.get_max_lit_index(), Eq(7));
+  EXPECT_THAT(under_test.get_max_lit_index(), Eq(5));
 }
 
 TEST(occurrence_list_tests, three_clauses)
@@ -73,7 +73,7 @@ TEST(occurrence_list_tests, three_clauses)
   EXPECT_THAT(under_test[-2], UnorderedElementsAre(&input1, &input3));
   EXPECT_THAT(under_test[-3], IsEmpty());
 
-  EXPECT_THAT(under_test.get_max_lit_index(), Eq(21));
+  EXPECT_THAT(under_test.get_max_lit_index(), Eq(19));
 }
 
 TEST(occurrence_list_tests, unaries)
@@ -87,7 +87,7 @@ TEST(occurrence_list_tests, unaries)
   EXPECT_THAT(under_test[10], UnorderedElementsAre(&input1));
   EXPECT_THAT(under_test[-20], UnorderedElementsAre(&input2));
 
-  EXPECT_THAT(under_test.get_max_lit_index(), Eq(41));
+  EXPECT_THAT(under_test.get_max_lit_index(), Eq(39));
 }
 
 TEST(occurrence_list_tests, remove_nonunary_clauses)

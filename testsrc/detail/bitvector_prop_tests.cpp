@@ -47,11 +47,11 @@ protected:
     bitvector_map<> result{max_var_idx + 1};
 
     for (auto iter : get_start_assignment()) {
-      if (iter.first > max_var_idx) {
+      if (to_var_index(iter.first) > max_var_idx) {
         throw std::logic_error{"bad test input: start assignment variable index out of range"};
       }
 
-      result[iter.first].get_words()[0] = iter.second;
+      result[to_var_index(iter.first)].get_words()[0] = iter.second;
     }
 
     return result;
@@ -63,13 +63,13 @@ MATCHER_P(bitvector_map_matches, expected_assignment, "")
   assignment_spec const& expected = expected_assignment;
 
   for (auto iter : expected) {
-    if (iter.first > arg.size()) {
+    if (to_var_index(iter.first) > arg.size()) {
       throw std::logic_error{"bad test input: expected assignment variable index out of range"};
     }
 
     using test_result_ty = assignment_spec::mapped_type;
     test_result_ty const test_result_bits =
-        arg[iter.first].get_words()[0] & std::numeric_limits<test_result_ty>::max();
+        arg[to_var_index(iter.first)].get_words()[0] & std::numeric_limits<test_result_ty>::max();
 
     if (test_result_bits != iter.second) {
       *result_listener << "var " << iter.first << ": expected=" << std::bitset<8>{iter.second}

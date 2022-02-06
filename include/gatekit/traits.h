@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -47,7 +48,11 @@ struct clause_traits {
  */
 template <typename Lit>
 struct lit_traits {
-  static auto negate(Lit literal) -> Lit { return -literal; }
+  static auto negate(Lit literal) -> Lit
+  {
+    assert(literal != 0);
+    return -literal;
+  }
 
   /**
    * Gets a non-negative index for the given literal.
@@ -56,13 +61,24 @@ struct lit_traits {
    */
   static auto to_index(Lit literal) -> std::size_t
   {
-    if (literal >= 0) {
-      return 2 * literal;
+    assert(literal != 0);
+
+    if (literal > 0) {
+      return 2 * (literal - 1);
     }
-    return (-2 * literal) + 1;
+    return (-2 * (literal + 1)) + 1;
   }
 
-  static auto to_var_index(Lit literal) -> std::size_t { return literal >= 0 ? literal : -literal; }
+  static auto to_lit(std::size_t var_index, bool positive) -> Lit
+  {
+    return static_cast<int>(var_index + 1) * (positive ? 1 : -1);
+  }
+
+  static auto to_var_index(Lit literal) -> std::size_t
+  {
+    assert(literal != 0);
+    return literal > 0 ? literal - 1 : -literal - 1;
+  }
 
   static auto is_positive(Lit literal) -> bool { return literal >= 0; }
 };
