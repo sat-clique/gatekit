@@ -63,6 +63,8 @@ struct lit_traits {
   }
 
   static auto to_var_index(Lit literal) -> std::size_t { return literal >= 0 ? literal : -literal; }
+
+  static auto is_positive(Lit literal) -> bool { return literal >= 0; }
 };
 
 }

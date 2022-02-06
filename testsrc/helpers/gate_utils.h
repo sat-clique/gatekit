@@ -4,6 +4,7 @@
 #include <gatekit/detail/scanner_structure.h>
 #include <gatekit/gate.h>
 
+#include <algorithm>
 #include <vector>
 
 namespace gatekit {
@@ -40,6 +41,4 @@ auto with_flipped_output_sign(gate<ClauseHandle> const& to_flip) -> gate<ClauseH
 
   return result;
 }
-
-
 }

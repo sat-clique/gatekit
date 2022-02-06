@@ -141,4 +141,34 @@ auto to_string(gate_structure<ClauseHandle> const& structure) -> std::string
   return result;
 }
 
+/**
+ * \brief Returns the maximum variable index occurring in the given gate, or 0
+ *        if the gate is empty
+ */
+template <typename ClauseHandle>
+auto max_var_index(gate<ClauseHandle> const& gate) -> std::size_t
+{
+  std::size_t result = 0;
+  for (auto const& clause : gate.clauses) {
+    for (auto const& lit : *clause) {
+      result = std::max(result, detail::to_var_index(lit));
+    }
+  }
+  return result;
+}
+
+/**
+ * \brief Returns the maximum variable index occurring in the given gate
+ *        structure, or 0 if the structure is empty.
+ */
+template <typename ClauseHandle>
+auto max_var_index(gate_structure<ClauseHandle> const& structure) -> std::size_t
+{
+  std::size_t result = 0;
+  for (auto const& gate : structure.gates) {
+    result = std::max(result, max_var_index(gate));
+  }
+  return result;
+}
+
 }

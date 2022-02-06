@@ -138,6 +138,8 @@ public:
     return m_bitvectors.get()[index];
   }
 
+  auto size() const noexcept -> std::size_t { return m_size; }
+
 private:
   unique_aligned_array_ptr<bitvector_t> m_bitvectors;
   std::size_t m_size;

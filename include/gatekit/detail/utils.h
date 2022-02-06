@@ -217,5 +217,16 @@ auto allocate_aligned(std::size_t num_objs) -> unique_aligned_array_ptr<T>
                                        delete[](raw_mem);
                                      }};
 }
+
+
+inline auto xorshift_star(uint64_t state) noexcept -> uint64_t
+{
+  const uint64_t mult = 2685821657736338717ull;
+  state ^= state >> 12;
+  state ^= state << 25;
+  state ^= state >> 27;
+  return state * mult;
+}
+
 }
 }
