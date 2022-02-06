@@ -4,6 +4,7 @@
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <string>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -158,6 +159,37 @@ void erase_all_sorted(std::vector<T>& container, std::vector<T> const& to_erase)
   }
 
   container.erase(container_new_end, container.end());
+}
+
+
+template <typename Iterable, typename ToStringFn>
+std::string iterable_to_string(Iterable const& iterable, ToStringFn&& to_string_fn)
+{
+  std::string result = "[";
+
+  auto const stop = iterable.end();
+  for (auto iter = iterable.begin(); iter != stop; ++iter) {
+    result += to_string_fn(*iter);
+
+    if (std::next(iter) != stop) {
+      result += ", ";
+    }
+  }
+
+  result += "]";
+  return result;
+}
+
+
+template <typename Iterable>
+std::string iterable_to_string(Iterable const& iterable)
+{
+  using item_type = typename std::decay<decltype(*iterable.begin())>::type;
+
+  return iterable_to_string(iterable, [](item_type const& item) {
+    using std::to_string;
+    return to_string(item);
+  });
 }
 
 

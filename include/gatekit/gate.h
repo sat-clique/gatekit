@@ -6,9 +6,12 @@
 
 #pragma once
 
-#include "traits.h"
+#include <gatekit/detail/clause_utils.h>
+#include <gatekit/detail/utils.h>
+#include <gatekit/traits.h>
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace gatekit {
@@ -94,5 +97,48 @@ struct gate_structure {
   // Root constraints, e.g. a unary clause. May be empty.
   std::vector<std::vector<lit>> roots;
 };
+
+
+/**
+ * \brief Returns a JSON object string representation of the given gate
+ */
+template <typename ClauseHandle>
+auto to_string(gate<ClauseHandle> const& gate) -> std::string
+{
+  using std::to_string;
+
+  std::string result = "{";
+  result += "\"inputs\": " + detail::iterable_to_string(gate.inputs) + ", ";
+  result += "\"output\": " + to_string(gate.output) + ", ";
+  result += "\"num_fwd_clauses\": " + to_string(gate.num_fwd_clauses) + ", ";
+  result += "\"is_nested_monotonically\": " + to_string(gate.is_nested_monotonically) + ", ";
+  result +=
+      "\"clauses\": " + detail::iterable_to_string(gate.clauses, [](ClauseHandle const& clause) {
+        return detail::iterable_to_string(::gatekit::detail::iterate(clause));
+      });
+
+  result += "}";
+  return result;
+}
+
+/**
+ * \brief Returns a JSON object string representation of the given gate
+ *        structure
+ */
+template <typename ClauseHandle>
+auto to_string(gate_structure<ClauseHandle> const& structure) -> std::string
+{
+  using lit = typename clause_traits<ClauseHandle>::lit;
+
+  std::string result = "{";
+  result += "\"gates\": " + detail::iterable_to_string(structure.gates) + ", ";
+  result += "\"roots\": " +
+            detail::iterable_to_string(structure.roots, [](std::vector<lit> const& roots) {
+              return detail::iterable_to_string(roots);
+            });
+
+  result += "}";
+  return result;
+}
 
 }

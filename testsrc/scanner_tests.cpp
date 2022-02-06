@@ -1,6 +1,7 @@
 #include <gatekit/scanner.h>
 
 #include "helpers/gate_factory.h"
+#include "helpers/gate_utils.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -14,39 +15,6 @@
 
 namespace gatekit {
 using GateList = std::vector<gate<ClauseHandle>>;
-
-namespace {
-auto to_structure(std::vector<gate<ClauseHandle>>&& gates, std::vector<std::vector<int>>&& roots)
-    -> gate_structure<ClauseHandle>
-{
-  gate_structure<ClauseHandle> result;
-  result.gates = std::move(gates);
-  result.roots = std::move(roots);
-  return result;
-}
-}
-
-auto with_flipped_output_sign(gate<ClauseHandle> const& to_flip) -> gate<ClauseHandle>
-{
-  assert(!to_flip.is_nested_monotonically);
-
-  gate<ClauseHandle> result;
-  result.output = detail::negate(to_flip.output);
-
-  std::copy(to_flip.clauses.begin() + to_flip.num_fwd_clauses,
-            to_flip.clauses.end(),
-            std::back_inserter(result.clauses));
-  result.num_fwd_clauses = result.clauses.size();
-  std::copy(to_flip.clauses.begin(),
-            to_flip.clauses.begin() + to_flip.num_fwd_clauses,
-            std::back_inserter(result.clauses));
-
-  result.inputs = detail::get_inputs(result);
-
-  result.is_nested_monotonically = false;
-
-  return result;
-}
 
 template <typename C>
 std::string to_string(gate<C> const& gate);
@@ -102,69 +70,6 @@ auto operator==(gate_structure<ClauseHandle> const& lhs, gate_structure<ClauseHa
   }
 
   return true;
-}
-
-
-template <typename Iterable, typename ToStringFn>
-std::string iterable_to_string(Iterable const& iterable, ToStringFn&& to_string_fn)
-{
-  std::string result = "[";
-
-  auto const stop = iterable.end();
-  for (auto iter = iterable.begin(); iter != stop; ++iter) {
-    result += to_string_fn(*iter);
-
-    if (std::next(iter) != stop) {
-      result += ", ";
-    }
-  }
-
-  result += "]";
-  return result;
-}
-
-template <typename Iterable>
-std::string iterable_to_string(Iterable const& iterable)
-{
-  using item_type = typename std::decay<decltype(*iterable.begin())>::type;
-
-  return iterable_to_string(iterable, [](item_type const& item) {
-    using std::to_string;
-    return to_string(item);
-  });
-}
-
-template <typename C>
-std::string to_string(gate<C> const& gate)
-{
-  using std::to_string;
-
-  std::string result = "{";
-  result += "inputs: " + iterable_to_string(gate.inputs) + ", ";
-  result += "output: " + to_string(gate.output) + ", ";
-  result += "num_fwd_clauses: " + to_string(gate.num_fwd_clauses) + ", ";
-  result += "is_nested_monotonically: " + to_string(gate.is_nested_monotonically) + ", ";
-  result += "clauses: " + iterable_to_string(gate.clauses, [](C const& clause) {
-              return iterable_to_string(::gatekit::detail::iterate(clause));
-            });
-
-  result += "}";
-  return result;
-}
-
-template <typename C>
-std::string to_string(gate_structure<C> const& structure)
-{
-  using lit = typename clause_traits<C>::lit;
-
-  std::string result = "{";
-  result += "gates: " + iterable_to_string(structure.gates) + ", ";
-  result += "roots: " + iterable_to_string(structure.roots, [](std::vector<lit> const& roots) {
-              return iterable_to_string(roots);
-            });
-
-  result += "}";
-  return result;
 }
 
 
@@ -227,16 +132,16 @@ TEST_P(scanner_tests, suite)
 // clang-format off
 INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
   ::testing::Values(
-    std::make_tuple("empty", to_structure({}, {}), ClauseList{}),
+    std::make_tuple("empty", to_structure<ClauseHandle>({}, {}), ClauseList{}),
 
     std::make_tuple("single gate, monotonically nested, not fully encoded, single root, no side problem",
-      to_structure({monotonic(and_gate({2, 3, 4}, 1))}, {{1}}), ClauseList{}),
+      to_structure<ClauseHandle>({monotonic(and_gate({2, 3, 4}, 1))}, {{1}}), ClauseList{}),
 
     std::make_tuple("single gate, monotonically nested, fully encoded, single root, no side problem",
-      to_structure({monotonic(and_gate({2, 3, 4}, 1), encoding::full)}, {{1}}), ClauseList{}),
+      to_structure<ClauseHandle>({monotonic(and_gate({2, 3, 4}, 1), encoding::full)}, {{1}}), ClauseList{}),
 
     std::make_tuple("multiple gates, monotonically nested, single root, no side problem, distinct inputs (1)",
-      to_structure({
+      to_structure<ClauseHandle>({
         monotonic(or_gate({-21, 22, 23}, 10)),
           monotonic(and_gate({31, -32}, 22)),
           monotonic(xor_gate(41, 42, 23))
@@ -244,7 +149,7 @@ INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
       ClauseList{}),
 
     std::make_tuple("multiple gates, monotonically nested, single root, no side problem, distinct inputs (2)",
-      to_structure({
+      to_structure<ClauseHandle>({
         monotonic(or_gate({-21, 22, 23}, 10), encoding::full),
           monotonic(and_gate({31, -32}, 22)),
           monotonic(xor_gate(41, 42, 23))
@@ -252,7 +157,7 @@ INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
       ClauseList{}),
 
     std::make_tuple("multiple gates, single root, no side problem, distinct inputs (1)",
-      to_structure({
+      to_structure<ClauseHandle>({
         monotonic(or_gate({-21, 22, 23}, 10), encoding::full),
           monotonic(and_gate({31, -32}, 22)),
           monotonic(xor_gate(41, 42, 23)),
@@ -262,7 +167,7 @@ INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
       ClauseList{}),
 
     std::make_tuple("multiple gates, single root, no side problem, distinct inputs (2)",
-      to_structure({
+      to_structure<ClauseHandle>({
         monotonic(xor_gate(21, 22, -10), encoding::full),
           and_gate({31, 32}, 21),
             and_gate({41, 42}, 31)
