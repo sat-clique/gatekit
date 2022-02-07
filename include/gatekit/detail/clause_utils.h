@@ -26,6 +26,12 @@ auto is_positive(Lit lit) -> bool
 }
 
 template <typename Lit>
+auto to_lit(std::size_t var_index, bool positive) -> Lit
+{
+  return lit_traits<Lit>::to_lit(var_index, positive);
+}
+
+template <typename Lit>
 auto negate(Lit lit) -> Lit
 {
   return lit_traits<Lit>::negate(lit);

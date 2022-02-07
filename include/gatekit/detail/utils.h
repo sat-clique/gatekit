@@ -128,6 +128,13 @@ void unstable_erase_first_all(std::vector<T>& container, std::vector<T>& to_eras
   }
 }
 
+template <typename Container, typename Pred>
+void erase_remove_if(Container& container, Pred&& predicate)
+{
+  container.erase(std::remove_if(container.begin(), container.end(), std::forward<Pred>(predicate)),
+                  container.end());
+}
+
 template <typename T>
 void erase_all_sorted(std::vector<T>& container, std::vector<T> const& to_erase)
 {
