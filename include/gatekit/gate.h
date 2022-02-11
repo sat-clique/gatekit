@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace gatekit {
@@ -148,7 +149,7 @@ auto to_string(gate_structure<ClauseHandle> const& structure) -> std::string
 template <typename ClauseHandle>
 auto max_var_index(gate<ClauseHandle> const& gate) -> std::size_t
 {
-  std::size_t result = 0;
+  std::size_t result = detail::to_var_index(gate.output);
   for (auto const& clause : gate.clauses) {
     for (auto const& lit : *clause) {
       result = std::max(result, detail::to_var_index(lit));
@@ -168,6 +169,33 @@ auto max_var_index(gate_structure<ClauseHandle> const& structure) -> std::size_t
   for (auto const& gate : structure.gates) {
     result = std::max(result, max_var_index(gate));
   }
+  return result;
+}
+
+/**
+ * \brief Returns the indices of all variables that occur in any gate inputs,
+ *        but are not gate outputs. The result is sorted in ascending order.
+ */
+template <typename ClauseHandle>
+auto input_var_indices(gate_structure<ClauseHandle> const& structure) -> std::vector<std::size_t>
+{
+  std::unordered_set<std::size_t> seen_outputs;
+  std::unordered_set<std::size_t> seen_vars;
+
+  for (auto const& gate : structure.gates) {
+    seen_outputs.insert(detail::to_var_index(gate.output));
+    for (auto const& input_lit : gate.inputs) {
+      seen_vars.insert(detail::to_var_index(input_lit));
+    }
+  }
+
+  for (auto const& lit : seen_outputs) {
+    seen_vars.erase(lit);
+  }
+
+  std::vector<std::size_t> result{seen_vars.begin(), seen_vars.end()};
+  std::sort(result.begin(), result.end());
+
   return result;
 }
 

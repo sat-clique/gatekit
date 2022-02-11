@@ -11,13 +11,14 @@
 #include <vector>
 
 namespace gatekit {
-namespace detail {
 
 template <typename Lit>
 struct lit_partitioning {
   std::vector<Lit> backbones;
   std::vector<std::vector<Lit>> equivalences;
 };
+
+namespace detail {
 
 class bitvector_sequence_partition {
 public:
@@ -119,5 +120,6 @@ private:
 
   std::vector<hash_entry> m_hashes;
 };
+
 }
 }

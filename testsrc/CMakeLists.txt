@@ -12,6 +12,7 @@ if (GATEKIT_ENABLE_TESTS)
 
     helpers/gate_factory.cpp
 
+    random_simulation_tests.cpp
     scanner_tests.cpp
   )
 
