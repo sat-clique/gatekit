@@ -12,6 +12,7 @@
 
 namespace gatekit {
 namespace detail {
+
 template <typename Lit>
 struct lit_partitioning {
   std::vector<Lit> backbones;
