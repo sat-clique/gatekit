@@ -2,6 +2,7 @@ if (GATEKIT_ENABLE_TESTS)
   add_executable(gatekit-tests
     detail/bitvector_partition_tests.cpp
     detail/bitvector_prop_tests.cpp
+    detail/bitvector_rand_tests.cpp
     detail/bitvector_tests.cpp
     detail/blocked_set_tests.cpp
     detail/collections_tests.cpp
