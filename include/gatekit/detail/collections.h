@@ -26,7 +26,7 @@ public:
     }
   }
 
-  void add_all(std::vector<Lit> literals)
+  void add_all(std::vector<Lit> const& literals)
   {
     for (Lit const& literal : literals) {
       add(literal);
