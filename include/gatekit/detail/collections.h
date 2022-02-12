@@ -13,11 +13,11 @@ namespace detail {
 template <typename Lit>
 class literal_set {
 public:
-  explicit literal_set(std::size_t max_index) { m_is_contained.resize(max_index); }
+  explicit literal_set(std::size_t max_index) { m_is_contained.resize(max_index + 2); }
 
   void add(Lit literal)
   {
-    assert(to_index(literal) <= m_is_contained.size());
+    assert(to_index(literal) < m_is_contained.size());
 
     std::size_t index = to_index(literal);
     if (!m_is_contained[index]) {

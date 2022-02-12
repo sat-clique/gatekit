@@ -38,6 +38,15 @@ TEST(literal_set_tests, elements_contained_once_after_multiple_adds)
   EXPECT_FALSE(under_test.contains(-2));
 }
 
+TEST(literal_set_tests, literals_at_max_may_be_contained)
+{
+  literal_set<int> under_test{gatekit::detail::to_index(24)};
+  under_test.add(24);
+  under_test.add(-24);
+  EXPECT_TRUE(under_test.contains(24));
+  EXPECT_TRUE(under_test.contains(-24));
+}
+
 TEST(literal_set_tests, literals_beyond_max_index_are_not_contained)
 {
   literal_set<int> under_test{100};
