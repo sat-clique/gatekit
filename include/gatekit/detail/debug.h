@@ -29,5 +29,11 @@ void dump_vector(std::string const& name, std::vector<T> const& clauses)
   std::cout << "] ";
 }
 
+#define GK_STRING(s) #s
+#define GK_DUMP(s)                                                                                 \
+  {                                                                                                \
+    std::cout << GK_STRING(s) << ": " << s << "\n";                                                \
+  }
+
 }
 }
