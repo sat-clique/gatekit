@@ -95,6 +95,7 @@ void sort_by_estimated_access_cost(std::vector<Lit>& to_sort, OccList const& occ
 template <typename ClauseHandle>
 void extend_gate_structure(gate_structure<ClauseHandle>& result,
                            occurrence_list<ClauseHandle>& occs,
+                           literal_set<typename clause_traits<ClauseHandle>::lit>& inputs,
                            typename clause_traits<ClauseHandle>::lit root)
 {
   using lit = typename clause_traits<ClauseHandle>::lit;
@@ -119,7 +120,6 @@ void extend_gate_structure(gate_structure<ClauseHandle>& result,
 
   std::vector<lit> current_candidates = {root};
   literal_set<lit> next_candidates{occs.get_max_lit_index()};
-  literal_set<lit> inputs{occs.get_max_lit_index()};
 
   bool found_any = false;
 
@@ -174,11 +174,12 @@ auto scan_gates_impl(ClauseHandleIter start, ClauseHandleIter stop) -> gate_stru
   occurrence_list<ClauseHandle> occs{start, stop};
 
   gate_structure<ClauseHandle> result;
+  literal_set<typename clause_traits<ClauseHandle>::lit> inputs{occs.get_max_lit_index()};
 
   auto unaries = occs.get_unaries();
   for (auto root_candidate : unaries) {
     occs.remove_unary(root_candidate);
-    extend_gate_structure(result, occs, root_candidate);
+    extend_gate_structure(result, occs, inputs, root_candidate);
   }
 
   return result;

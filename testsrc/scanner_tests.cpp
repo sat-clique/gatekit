@@ -172,6 +172,15 @@ INSTANTIATE_TEST_SUITE_P(scanner_tests, scanner_tests,
           and_gate({31, 32}, 21),
             and_gate({41, 42}, 31)
       }, {{-10}}),
+      ClauseList{}),
+
+    std::make_tuple("multiple gates, multiple roots, shared inputs",
+      to_structure<ClauseHandle>({
+        monotonic(or_gate({10, 20}, 1)),
+        monotonic(or_gate({-10, -20}, 2)),
+          and_gate({100, 200}, -10),
+          and_gate({300, 400}, 20)
+      }, {{1}, {2}}),
       ClauseList{})
 ));
 // clang-format on
