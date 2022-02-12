@@ -133,25 +133,10 @@ auto are_pairwise_joined_clauses_all_taut(std::vector<ClauseHandle> const& claus
 
 
 template <typename OccList>
-auto is_matching_gate_pattern(typename OccList::lit const& output,
-                              OccList const& clauses,
-                              std::vector<size_t> const& inputs) -> bool
+auto is_full_gate_or_ssr_optimized(typename OccList::lit const& output,
+                                   OccList const& clauses,
+                                   std::vector<size_t> const& inputs) -> bool
 {
-  using ClauseHandle = typename OccList::clause_handle;
-
-  std::vector<ClauseHandle> const& fwd = clauses[negate(output)];
-  std::vector<ClauseHandle> const& bwd = clauses[output];
-  std::vector<ClauseHandle> const* larger_list = (fwd.size() > bwd.size()) ? &fwd : &bwd;
-
-  // Detect and/or gates: if fwd (rsp. bwd) contains only a single clause S,
-  // all input variables must occur in that clause. If the other set contains
-  // only 2-clauses, blockedness guarantees that for each input literal a
-  // in S, there is a clause (-a, -output) (rsp. (-a output)) in the other
-  // set.
-  if ((fwd.size() == 1 || bwd.size() == 1) && are_all_of_size(*larger_list, 2)) {
-    return true;
-  }
-
   // Detect gates in which each input assignment causes exactly one clause
   // to propagate the output. XOR gates and gates with one clause for each
   // possible input assignment are special cases of this class of encoded
@@ -171,7 +156,13 @@ auto is_matching_gate_pattern(typename OccList::lit const& output,
   // number of different input assignments for the gate. Also, if A u B is
   // tautologic for each two distinct clauses A, B in the gate encoding,
   // each input causes a single gate in the clause to propagate the output.
+
+  using ClauseHandle = typename OccList::clause_handle;
+
+  std::vector<ClauseHandle> const& fwd = clauses[negate(output)];
+  std::vector<ClauseHandle> const& bwd = clauses[output];
   std::size_t const num_inputs = inputs.size();
+
   if (num_inputs <= 63) {
     uint64_t const num_total_input_combinations = (1ull << num_inputs);
     uint64_t const num_covered_input_combinations =
@@ -191,6 +182,95 @@ auto is_matching_gate_pattern(typename OccList::lit const& output,
   }
 
   return false;
+}
+
+
+template <typename ClauseHandle>
+auto get_clause_sizes_if_same_length(std::vector<ClauseHandle> const& clauses) -> std::size_t
+{
+  if (clauses.empty()) {
+    return 0;
+  }
+
+  std::size_t result = get_size(clauses.front());
+
+  for (auto const& clause : clauses) {
+    if (get_size(clause) != result) {
+      return 0;
+    }
+  }
+
+  return result;
+}
+
+inline auto factorial(std::size_t k) -> std::size_t
+{
+  std::size_t result = 1;
+  for (size_t i = 2; i <= k; ++i) {
+    result *= i;
+  }
+  return result;
+}
+
+inline auto n_choose_k(std::size_t n, std::size_t k) -> std::size_t
+{
+  assert(k <= n);
+
+  if (k == n) {
+    return 1;
+  }
+  else if (k == n - 1) {
+    return n;
+  }
+
+  return factorial(n) / (factorial(k) * factorial(n - k));
+}
+
+template <typename OccList>
+auto is_at_least_k_gate(typename OccList::lit const& output,
+                        OccList const& clauses,
+                        std::vector<size_t> const& inputs) -> bool
+{
+  using ClauseHandle = typename OccList::clause_handle;
+
+  std::vector<ClauseHandle> const& fwd = clauses[negate(output)];
+  std::vector<ClauseHandle> const& bwd = clauses[output];
+
+  std::size_t const fwd_clause_size = get_clause_sizes_if_same_length(fwd);
+  if (fwd_clause_size == 0) {
+    return false;
+  }
+
+  std::size_t const bwd_clause_size = get_clause_sizes_if_same_length(bwd);
+  if (bwd_clause_size == 0) {
+    return false;
+  }
+
+  std::size_t const k = bwd_clause_size - 1;
+  std::size_t const anti_k = inputs.size() - k + 1;
+
+  if (fwd_clause_size != anti_k + 1) {
+    return false;
+  }
+
+  std::size_t const inputs_choose_k = n_choose_k(inputs.size(), k);
+  std::size_t const inputs_choose_anti_k = n_choose_k(inputs.size(), anti_k);
+
+  return inputs_choose_k == bwd.size() && inputs_choose_anti_k == fwd.size();
+}
+
+
+template <typename OccList>
+auto is_matching_gate_pattern(typename OccList::lit const& output,
+                              OccList const& clauses,
+                              std::vector<size_t> const& inputs) -> bool
+{
+  // Note that
+  //   * AND and OR gates are special cases of at-least-k gates
+  //   * at-most-k gates can be interpreted in terms of at-least-k'
+  //   * XOR gates are special cases of "full" gates
+  return is_at_least_k_gate(output, clauses, inputs) ||
+         is_full_gate_or_ssr_optimized(output, clauses, inputs);
 }
 
 template <typename OccList>

@@ -64,6 +64,11 @@ INSTANTIATE_TEST_SUITE_P(is_gate_output_tests, is_gate_output_tests,
     std::make_tuple("full gate simplified with self-subsuming resolution, but missing a clause is not gate",
       ClauseList{{-3, -4, -5}, {3, -4, 5}}, 5, false, is_gate::no),
 
+    std::make_tuple("ternary at-least-2 gate is gate",
+      ClauseList{{-1, -2, 4}, {-1, -3, 4}, {-2, -3, 4},
+                 {1, 2, -4}, {1, 3, -4}, {2, 3, -4}},
+      4, false, is_gate::yes),
+
     std::make_tuple("half a gate is not gate", ClauseList{{1, -2, -3}, {-1, -2, 3}}, 3, false, is_gate::no)
 ));
 // clang-format on
