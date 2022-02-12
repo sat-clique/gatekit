@@ -77,5 +77,44 @@ INSTANTIATE_TEST_SUITE_P(erase_functions_tests, erase_functions_tests,
 ));
 // clang-format on
 
+using n_choose_k_test_param = std::tuple<std::size_t, // n
+                                         std::size_t, // k
+                                         std::size_t  // expected result
+                                         >;
+
+class n_choose_k_tests : public ::testing::TestWithParam<n_choose_k_test_param> {
+};
+
+TEST_P(n_choose_k_tests, suite)
+{
+  std::size_t const n = std::get<0>(GetParam());
+  std::size_t const k = std::get<1>(GetParam());
+  std::size_t const expected = std::get<2>(GetParam());
+
+  EXPECT_THAT(n_choose_k(n, k), ::testing::Eq(expected));
+}
+
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(n_choose_k_tests, n_choose_k_tests,
+  ::testing::Values(
+    std::make_tuple(1, 0, 1),
+    std::make_tuple(1, 1, 1),
+    std::make_tuple(2, 0, 1),
+    std::make_tuple(2, 1, 2),
+    std::make_tuple(2, 2, 1),
+    std::make_tuple(3, 0, 1),
+    std::make_tuple(4, 0, 1),
+    std::make_tuple(4, 1, 4),
+    std::make_tuple(4, 2, 6),
+    std::make_tuple(4, 3, 4),
+    std::make_tuple(4, 4, 1),
+
+    std::make_tuple(std::numeric_limits<uint64_t>::max(), 0, 1),
+    std::make_tuple(std::numeric_limits<uint64_t>::max(), 1, std::numeric_limits<uint64_t>::max()),
+    std::make_tuple(std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max() - 1, std::numeric_limits<uint64_t>::max()),
+    std::make_tuple(std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max(), 1)
+));
+// clang-format on
+
 }
 }

@@ -3,6 +3,7 @@
 #include <gatekit/detail/blocked_set.h>
 #include <gatekit/detail/clause_utils.h>
 #include <gatekit/detail/occurrence_list.h>
+#include <gatekit/detail/utils.h>
 
 #include <gatekit/gate.h>
 #include <gatekit/traits.h>
@@ -203,28 +204,6 @@ auto get_clause_sizes_if_same_length(std::vector<ClauseHandle> const& clauses) -
   return result;
 }
 
-inline auto factorial(std::size_t k) -> std::size_t
-{
-  std::size_t result = 1;
-  for (size_t i = 2; i <= k; ++i) {
-    result *= i;
-  }
-  return result;
-}
-
-inline auto n_choose_k(std::size_t n, std::size_t k) -> std::size_t
-{
-  assert(k <= n);
-
-  if (k == n) {
-    return 1;
-  }
-  else if (k == n - 1) {
-    return n;
-  }
-
-  return factorial(n) / (factorial(k) * factorial(n - k));
-}
 
 template <typename OccList>
 auto is_at_least_k_gate(typename OccList::lit const& output,

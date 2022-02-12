@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
@@ -233,6 +234,32 @@ inline auto xorshift_star(uint64_t state) noexcept -> uint64_t
   state ^= state << 25;
   state ^= state >> 27;
   return state * mult;
+}
+
+
+inline auto factorial(uint64_t k) -> std::size_t
+{
+  std::size_t result = 1;
+  for (size_t i = 2; i <= k; ++i) {
+    result *= i;
+  }
+  return result;
+}
+
+inline auto n_choose_k(uint64_t n, uint64_t k) -> uint64_t
+{
+  assert(k <= n);
+
+  if (k == 0 || k == n) {
+    return 1;
+  }
+
+  if (k == 1 || k == n - 1) {
+    return n;
+  }
+
+  // TODO: replace naive implementation (slow & overflow-prone)
+  return factorial(n) / (factorial(k) * factorial(n - k));
 }
 
 }
