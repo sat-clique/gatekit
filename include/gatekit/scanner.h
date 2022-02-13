@@ -20,7 +20,7 @@ namespace gatekit {
  *
  * \tparam ClauseHandle   The clause handle type, for instance
  *                        `std::vector<int> const*` for simple applications.
- *                        See traits.h for more information.
+ *                        See clause.h for more information.
  *
  * \tparam ClauseHandleIter Iterator over ClauseHandle objects.
  */

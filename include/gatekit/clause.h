@@ -1,11 +1,13 @@
 /**
  * \file
  *
- * \brief Traits for clauses and literals
+ * \brief Functions for accessing client-code clauses and literals
  *
- * This file contains traits that need to be specialized for the concrete
- * CNF clause and literal types used by the clients of the gate analysis
- * functions.
+ * This file contains structs that need to be specialized for the concrete
+ * CNF clause and literal types used by the clients of gatekit. The default
+ * implementations work out-of-the box for clauses that have an interface
+ * similar to std::vector, and for literal types that are similar to
+ * DIMACS-style integer literals.
  */
 
 #pragma once
@@ -18,9 +20,13 @@
 namespace gatekit {
 
 /**
- * Type traits for clauses in gatekit. The default implementation is suitable
- * for container-like clauses, with `ClauseHandle` simply being pointers to
- * clauses.
+ * Functions for accessing clauses in gatekit. The default implementation is suitable
+ * for container-like clauses like `std::vector<int>`, with `ClauseHandle` simply being
+ * pointers to clauses.
+ *
+ * For clauses that are not STL-container-like, accessor functions need to be
+ * provided by specializing this struct (similar to the example given for
+ * lit_funcs).
  *
  * This can also be used with more elaborate clause handle types - for example,
  * in modern SAT solvers, a clause handle might contain either the pointer to a
@@ -28,7 +34,7 @@ namespace gatekit {
  * unary or binary clause.
  */
 template <typename ClauseHandle>
-struct clause_traits {
+struct clause_funcs {
   using lit = typename std::decay<decltype(*(std::declval<ClauseHandle>()->begin()))>::type;
   using size_type = std::size_t;
 
@@ -40,11 +46,26 @@ struct clause_traits {
 };
 
 /**
- * Type traits for literals in gatekit. The default implementation is suitable
+ * Functions for accessing literals in gatekit. The default implementation is suitable
  * for integer-like, DIMACS-style literals.
+ *
+ * For other kinds of literals (for example, cnfkit or Minisat literal types),
+ * this struct needs to be specialized in client code. Example for cnfkit:
+ *
+ * namespace gatekit {
+ * template <>
+ * struct lit_funcs<cnfkit::lit> {
+ *   static auto negate(cnfkit::lit literal) -> cnfkit::lit { return -literal; }
+ *   static auto to_index(cnfkit::lit literal) -> std::size_t { return literal.get_raw_value(); }
+ *   static auto to_var_index(cnfkit::lit literal) -> std::size_t
+ *   {
+ *     return literal.get_var().get_raw_value();
+ *   }
+ * };
+ * }
  */
 template <typename Lit>
-struct lit_traits {
+struct lit_funcs {
   static auto negate(Lit literal) -> Lit
   {
     assert(literal != 0);

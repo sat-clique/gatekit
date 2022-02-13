@@ -6,9 +6,9 @@
 
 #pragma once
 
+#include <gatekit/clause.h>
 #include <gatekit/detail/clause_utils.h>
 #include <gatekit/detail/utils.h>
-#include <gatekit/traits.h>
 
 #include <cstdint>
 #include <string>
@@ -32,7 +32,7 @@ namespace gatekit {
  */
 template <typename ClauseHandle>
 struct gate {
-  using lit = typename clause_traits<ClauseHandle>::lit;
+  using lit = typename clause_funcs<ClauseHandle>::lit;
   using clause_handle = ClauseHandle;
 
   /**
@@ -91,7 +91,7 @@ struct gate {
  */
 template <typename Clause>
 struct gate_structure {
-  using lit = typename clause_traits<Clause>::lit;
+  using lit = typename clause_funcs<Clause>::lit;
 
   std::vector<gate<Clause>> gates;
 
@@ -129,7 +129,7 @@ auto to_string(gate<ClauseHandle> const& gate) -> std::string
 template <typename ClauseHandle>
 auto to_string(gate_structure<ClauseHandle> const& structure) -> std::string
 {
-  using lit = typename clause_traits<ClauseHandle>::lit;
+  using lit = typename clause_funcs<ClauseHandle>::lit;
 
   std::string result = "{";
   result += "\"gates\": " + detail::iterable_to_string(structure.gates) + ", ";

@@ -4,7 +4,7 @@
 #include <gatekit/detail/collections.h>
 #include <gatekit/detail/utils.h>
 
-#include <gatekit/traits.h>
+#include <gatekit/clause.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -17,7 +17,7 @@ namespace detail {
 template <typename ClauseHandle>
 class occurrence_list {
 public:
-  using lit = typename clause_traits<ClauseHandle>::lit;
+  using lit = typename clause_funcs<ClauseHandle>::lit;
   using clause_handle = ClauseHandle;
   using occurrence_vec = std::vector<ClauseHandle>;
 

@@ -5,8 +5,8 @@
 #include <gatekit/detail/occurrence_list.h>
 #include <gatekit/detail/utils.h>
 
+#include <gatekit/clause.h>
 #include <gatekit/gate.h>
-#include <gatekit/traits.h>
 
 #include <algorithm>
 #include <vector>

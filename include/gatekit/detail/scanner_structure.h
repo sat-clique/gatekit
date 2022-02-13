@@ -6,8 +6,8 @@
 #include <gatekit/detail/occurrence_list.h>
 #include <gatekit/detail/scanner_gate.h>
 
+#include <gatekit/clause.h>
 #include <gatekit/gate.h>
-#include <gatekit/traits.h>
 
 #include <algorithm>
 #include <unordered_set>
@@ -25,9 +25,9 @@ struct optional_gate {
 
 template <typename ClauseHandle>
 auto get_inputs(gate<ClauseHandle> const& gate)
-    -> std::vector<typename clause_traits<ClauseHandle>::lit>
+    -> std::vector<typename clause_funcs<ClauseHandle>::lit>
 {
-  using lit = typename clause_traits<ClauseHandle>::lit;
+  using lit = typename clause_funcs<ClauseHandle>::lit;
 
   std::vector<lit> result;
 
@@ -95,10 +95,10 @@ void sort_by_estimated_access_cost(std::vector<Lit>& to_sort, OccList const& occ
 template <typename ClauseHandle>
 void extend_gate_structure(gate_structure<ClauseHandle>& result,
                            occurrence_list<ClauseHandle>& occs,
-                           literal_set<typename clause_traits<ClauseHandle>::lit>& inputs,
-                           typename clause_traits<ClauseHandle>::lit root)
+                           literal_set<typename clause_funcs<ClauseHandle>::lit>& inputs,
+                           typename clause_funcs<ClauseHandle>::lit root)
 {
-  using lit = typename clause_traits<ClauseHandle>::lit;
+  using lit = typename clause_funcs<ClauseHandle>::lit;
 
   // Basic algorithm:
   //
@@ -174,7 +174,7 @@ auto scan_gates_impl(ClauseHandleIter start, ClauseHandleIter stop) -> gate_stru
   occurrence_list<ClauseHandle> occs{start, stop};
 
   gate_structure<ClauseHandle> result;
-  literal_set<typename clause_traits<ClauseHandle>::lit> inputs{occs.get_max_lit_index()};
+  literal_set<typename clause_funcs<ClauseHandle>::lit> inputs{occs.get_max_lit_index()};
 
   auto unaries = occs.get_unaries();
   for (auto root_candidate : unaries) {

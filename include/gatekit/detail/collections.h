@@ -1,7 +1,7 @@
 #pragma once
 
+#include <gatekit/clause.h>
 #include <gatekit/detail/clause_utils.h>
-#include <gatekit/traits.h>
 
 #include <cassert>
 #include <cstdint>

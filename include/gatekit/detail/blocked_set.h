@@ -1,8 +1,8 @@
 #pragma once
 
+#include <gatekit/clause.h>
 #include <gatekit/detail/clause_utils.h>
 #include <gatekit/detail/occurrence_list.h>
-#include <gatekit/traits.h>
 
 namespace gatekit {
 namespace detail {
@@ -10,8 +10,7 @@ namespace detail {
 template <typename ClauseHandle>
 auto is_resolvent_tautologic(ClauseHandle lhs,
                              ClauseHandle rhs,
-                             typename clause_traits<ClauseHandle>::lit const& resolution_lit)
-    -> bool
+                             typename clause_funcs<ClauseHandle>::lit const& resolution_lit) -> bool
 {
   std::size_t const resolution_idx = to_var_index(resolution_lit);
 

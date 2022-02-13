@@ -39,11 +39,11 @@ void randomize_all(bitvector_map<Bits, Alignment>& assignments, bitvector_random
 
 template <typename ClauseHandle>
 auto random_simulation(gate_structure<ClauseHandle> const& structure, uint64_t max_num_rounds)
-    -> lit_partitioning<typename clause_traits<ClauseHandle>::lit>
+    -> lit_partitioning<typename clause_funcs<ClauseHandle>::lit>
 {
   using namespace gatekit::detail;
 
-  using lit_t = typename clause_traits<ClauseHandle>::lit;
+  using lit_t = typename clause_funcs<ClauseHandle>::lit;
 
   std::size_t const max_var = max_var_index(structure);
   std::vector<std::size_t> const inputs = input_var_indices(structure);
