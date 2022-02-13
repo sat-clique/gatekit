@@ -25,8 +25,7 @@ namespace gatekit {
  * pointers to clauses.
  *
  * For clauses that are not STL-container-like, accessor functions need to be
- * provided by specializing this struct (similar to the example given for
- * lit_funcs).
+ * provided by specializing this struct.
  *
  * This can also be used with more elaborate clause handle types - for example,
  * in modern SAT solvers, a clause handle might contain either the pointer to a
@@ -46,59 +45,24 @@ struct clause_funcs {
 };
 
 /**
- * Functions for accessing literals in gatekit. The default implementation is suitable
- * for integer-like, DIMACS-style literals.
- *
- * For other kinds of literals (for example, cnfkit or Minisat literal types),
- * this struct needs to be specialized in client code. Example for cnfkit:
- *
- * namespace gatekit {
- * template <>
- * struct lit_funcs<cnfkit::lit> {
- *   static auto negate(cnfkit::lit literal) -> cnfkit::lit { return -literal; }
- *   static auto to_index(cnfkit::lit literal) -> std::size_t { return literal.get_raw_value(); }
- *   static auto to_var_index(cnfkit::lit literal) -> std::size_t
- *   {
- *     return literal.get_var().get_raw_value();
- *   }
- * };
- * }
+ * Needs to be specialized if the client code uses literals that are not
+ * DIMACS-style integer literals
  */
 template <typename Lit>
-struct lit_funcs {
-  static auto negate(Lit literal) -> Lit
-  {
-    assert(literal != 0);
-    return -literal;
-  }
+auto lit_to_dimacs(Lit literal) -> int
+{
+  assert(literal != 0);
+  return literal;
+}
 
-  /**
-   * Gets a non-negative index for the given literal.
-   *
-   * The distance between the indices of `literal` and `-literal` must be 1.
-   */
-  static auto to_index(Lit literal) -> std::size_t
-  {
-    assert(literal != 0);
-
-    if (literal > 0) {
-      return 2 * (literal - 1);
-    }
-    return (-2 * (literal + 1)) + 1;
-  }
-
-  static auto to_lit(std::size_t var_index, bool positive) -> Lit
-  {
-    return static_cast<int>(var_index + 1) * (positive ? 1 : -1);
-  }
-
-  static auto to_var_index(Lit literal) -> std::size_t
-  {
-    assert(literal != 0);
-    return literal > 0 ? literal - 1 : -literal - 1;
-  }
-
-  static auto is_positive(Lit literal) -> bool { return literal >= 0; }
-};
-
+/**
+ * Needs to be specialized if the client code uses literals that are not
+ * DIMACS-style integer literals
+ */
+template <typename Lit>
+auto dimacs_to_lit(int dimacs_literal) -> Lit
+{
+  assert(dimacs_literal != 0);
+  return dimacs_literal;
+}
 }

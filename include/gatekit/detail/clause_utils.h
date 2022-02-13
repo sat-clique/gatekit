@@ -10,31 +10,38 @@ namespace detail {
 template <typename Lit>
 auto to_index(Lit lit) -> std::size_t
 {
-  return lit_funcs<Lit>::to_index(lit);
+  int const dimacs_lit = lit_to_dimacs(lit);
+  if (dimacs_lit > 0) {
+    return 2 * (dimacs_lit - 1);
+  }
+  else {
+    return (-2 * (dimacs_lit + 1)) + 1;
+  }
 }
 
 template <typename Lit>
 auto to_var_index(Lit lit) -> std::size_t
 {
-  return lit_funcs<Lit>::to_var_index(lit);
+  int const dimacs_lit = lit_to_dimacs(lit);
+  return (dimacs_lit > 0 ? dimacs_lit : -dimacs_lit) - 1;
 }
 
 template <typename Lit>
 auto is_positive(Lit lit) -> bool
 {
-  return lit_funcs<Lit>::is_positive(lit);
+  return lit_to_dimacs(lit) > 0;
 }
 
 template <typename Lit>
 auto to_lit(std::size_t var_index, bool positive) -> Lit
 {
-  return lit_funcs<Lit>::to_lit(var_index, positive);
+  return dimacs_to_lit<Lit>(static_cast<int>((var_index + 1) * (positive ? 1 : -1)));
 }
 
 template <typename Lit>
 auto negate(Lit lit) -> Lit
 {
-  return lit_funcs<Lit>::negate(lit);
+  return dimacs_to_lit<Lit>(-lit_to_dimacs(lit));
 }
 
 template <typename Lit>
