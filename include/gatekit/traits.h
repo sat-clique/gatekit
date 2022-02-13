@@ -26,9 +26,6 @@ namespace gatekit {
  * in modern SAT solvers, a clause handle might contain either the pointer to a
  * clause or it might contain up to 2 literals, directly representing a
  * unary or binary clause.
- *
- * For usage with gatekit, `std::hash` must have been specialized for
- * `ClauseHandle`.
  */
 template <typename ClauseHandle>
 struct clause_traits {
