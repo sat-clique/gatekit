@@ -9,12 +9,10 @@
 namespace gatekit {
 namespace detail {
 
-template <std::size_t Bits = 2048, std::size_t Alignment = 64>
-class alignas(Alignment) bitvector {
-  static_assert(Bits % 64 == 0, "The Bits parameter must be a multiple of 64");
-
+class alignas(64) bitvector {
 public:
-  using words_t = std::array<uint64_t, Bits / 64>;
+  using word_t = uint64_t;
+  using words_t = std::array<word_t, 32>;
 
   bitvector() { fill(0ull); }
 
@@ -126,27 +124,24 @@ public:
 private:
   explicit bitvector(uint64_t value) { fill(value); }
 
-  std::array<uint64_t, Bits / 64> m_vars;
+  words_t m_vars;
 };
 
 
-template <std::size_t Bits = 2048, std::size_t Alignment = 64>
 class bitvector_map {
 public:
-  using bitvector_t = bitvector<Bits, Alignment>;
-
   explicit bitvector_map(std::size_t size) : m_size(size)
   {
-    m_bitvectors = allocate_aligned<bitvector_t>(size);
+    m_bitvectors = allocate_aligned<bitvector>(size);
   }
 
-  auto operator[](std::size_t index) noexcept -> bitvector_t&
+  auto operator[](std::size_t index) noexcept -> bitvector&
   {
     assert(index < m_size);
     return m_bitvectors.get()[index];
   }
 
-  auto operator[](std::size_t index) const noexcept -> bitvector_t const&
+  auto operator[](std::size_t index) const noexcept -> bitvector const&
   {
     assert(index < m_size);
     return m_bitvectors.get()[index];
@@ -155,15 +150,14 @@ public:
   auto size() const noexcept -> std::size_t { return m_size; }
 
 private:
-  unique_aligned_array_ptr<bitvector_t> m_bitvectors;
+  unique_aligned_array_ptr<bitvector> m_bitvectors;
   std::size_t m_size;
 };
 
 
 class bitvector_hash {
 public:
-  template <std::size_t Bits = 2048, std::size_t Alignment = 64>
-  void add(bitvector<Bits, Alignment> const& bv)
+  void add(bitvector const& bv)
   {
     for (uint64_t word : bv.get_words()) {
       m_hash = xorshift_star(m_hash ^ word);

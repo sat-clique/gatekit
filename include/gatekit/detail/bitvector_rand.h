@@ -9,16 +9,14 @@
 namespace gatekit {
 namespace detail {
 
-template <std::size_t Bits, std::size_t Alignment>
-void randomize_bv(bitvector<Bits, Alignment>& target, uint64_t additional)
+inline void randomize_bv(bitvector& target, uint64_t additional)
 {
   for (auto& word : target.get_words()) {
     word = xorshift_star(word + additional);
   }
 }
 
-template <std::size_t Bits, std::size_t Alignment>
-void thicken_bv(bitvector<Bits, Alignment>& target, uint64_t additional)
+inline void thicken_bv(bitvector& target, uint64_t additional)
 {
   for (auto& word : target.get_words()) {
     word |= xorshift_star(word + additional);
@@ -28,8 +26,7 @@ void thicken_bv(bitvector<Bits, Alignment>& target, uint64_t additional)
 
 class bitvector_randomizer {
 public:
-  template <std::size_t Bits = 2048, std::size_t Alignment = 64>
-  void randomize(bitvector<Bits, Alignment>& target, uint32_t bias_exponent)
+  void randomize(bitvector& target, uint32_t bias_exponent)
   {
     assert(bias_exponent > 0);
 

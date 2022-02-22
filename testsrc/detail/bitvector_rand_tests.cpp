@@ -8,18 +8,17 @@
 namespace gatekit {
 namespace detail {
 
-template <std::size_t Bits, std::size_t Alignment>
-auto get_ones_percentage(bitvector<Bits, Alignment> const& bv) -> double
+auto get_ones_percentage(bitvector const& bv) -> double
 {
 
   int num_ones = 0;
-  for (uint64_t const& word : bv.get_words()) {
-    for (int i = 0; i < 64; ++i) {
+  for (auto const& word : bv.get_words()) {
+    for (unsigned int i = 0; i < 64; ++i) {
       num_ones += ((word & (1ull << i)) != 0 ? 1 : 0);
     }
   }
 
-  return static_cast<double>(num_ones) / Bits;
+  return static_cast<double>(num_ones) / (bv.get_words().size() * sizeof(bitvector::word_t) * 8);
 }
 
 // parameter: randomization bias
@@ -32,7 +31,7 @@ TEST_P(bitvector_randomizer_tests, suite)
   uint32_t const bias = GetParam();
 
   double avg_ones = 0.0;
-  bitvector<> bv;
+  bitvector bv;
 
   int const num_rounds = 1024;
   for (int i = 0; i < num_rounds; ++i) {

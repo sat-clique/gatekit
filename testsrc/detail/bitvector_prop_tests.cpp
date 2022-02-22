@@ -41,10 +41,10 @@ protected:
 
   auto get_expected_assignment() const -> assignment_spec const& { return std::get<3>(GetParam()); }
 
-  auto get_start_assignment_as_bvmap() const -> bitvector_map<>
+  auto get_start_assignment_as_bvmap() const -> bitvector_map
   {
     std::size_t const max_var_idx = max_var_index(get_structure());
-    bitvector_map<> result{max_var_idx + 1};
+    bitvector_map result{max_var_idx + 1};
 
     for (auto iter : get_start_assignment()) {
       if (to_var_index(iter.first) > max_var_idx) {
@@ -84,7 +84,7 @@ MATCHER_P(bitvector_map_matches, expected_assignment, "")
 TEST_P(propagate_structure_tests, suite)
 {
   gate_structure<ClauseHandle> const& structure = get_structure();
-  bitvector_map<> assignment = get_start_assignment_as_bvmap();
+  bitvector_map assignment = get_start_assignment_as_bvmap();
   propagate_structure(assignment, structure);
   EXPECT_THAT(assignment, bitvector_map_matches(get_expected_assignment()));
 }

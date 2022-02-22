@@ -10,11 +10,10 @@
 namespace gatekit {
 
 namespace detail {
-template <std::size_t Bits, std::size_t Alignment>
-void randomize(bitvector_map<Bits, Alignment>& assignments,
-               bitvector_randomizer& randomizer,
-               std::vector<std::size_t> const& input_var_indices,
-               uint64_t step)
+inline void randomize(bitvector_map& assignments,
+                      bitvector_randomizer& randomizer,
+                      std::vector<std::size_t> const& input_var_indices,
+                      uint64_t step)
 {
   if (step % 2 == 0) {
     for (std::size_t var : input_var_indices) {
@@ -28,8 +27,7 @@ void randomize(bitvector_map<Bits, Alignment>& assignments,
   }
 }
 
-template <std::size_t Bits, std::size_t Alignment>
-void randomize_all(bitvector_map<Bits, Alignment>& assignments, bitvector_randomizer& randomizer)
+inline void randomize_all(bitvector_map& assignments, bitvector_randomizer& randomizer)
 {
   for (std::size_t idx = 0; idx < assignments.size(); ++idx) {
     randomizer.randomize(assignments[idx], 1);
@@ -48,7 +46,7 @@ auto random_simulation(gate_structure<ClauseHandle> const& structure, uint64_t m
   std::size_t const max_var = max_var_index(structure);
   std::vector<std::size_t> const inputs = input_var_indices(structure);
 
-  bitvector_map<> assignments{max_var + 1};
+  bitvector_map assignments{max_var + 1};
   bitvector_sequence_partition var_partition{max_var + 1};
   bitvector_randomizer randomizer;
 

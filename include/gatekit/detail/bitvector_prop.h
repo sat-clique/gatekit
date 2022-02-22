@@ -41,12 +41,9 @@ private:
 };
 
 
-template <typename ClauseHandle, std::size_t Bits, std::size_t Alignment>
-void propagate_gate(bitvector_map<Bits, Alignment>& assignment_by_var,
-                    gate<ClauseHandle> const& gate)
+template <typename ClauseHandle>
+void propagate_gate(bitvector_map& assignment_by_var, gate<ClauseHandle> const& gate)
 {
-  using bitvec = bitvector<Bits, Alignment>;
-
   auto const out_var = to_var_index(gate.output);
 
   // Approach: check if fwd (rsp. the bwd clauses, whichever set is smaller) are all
@@ -70,11 +67,11 @@ void propagate_gate(bitvector_map<Bits, Alignment>& assignment_by_var,
   // binary variable assignment, so indeterminacy cannot be expressed. However,
   // this is not a problem since the original gate semantics are not violated.
 
-  bitvec output_forced_by_other_set = bitvec::ones();
+  bitvector output_forced_by_other_set = bitvector::ones();
 
   prop_clauses<ClauseHandle> clauses{gate};
   for (ClauseHandle const& clause : clauses) {
-    bitvec this_clause_satisfied = bitvec::zeros();
+    bitvector this_clause_satisfied = bitvector::zeros();
 
     for (auto const& lit : iterate(clause)) {
       auto const lit_var = to_var_index(lit);
@@ -82,7 +79,7 @@ void propagate_gate(bitvector_map<Bits, Alignment>& assignment_by_var,
         continue;
       }
 
-      bitvec& lit_var_assignments = assignment_by_var[lit_var];
+      bitvector& lit_var_assignments = assignment_by_var[lit_var];
 
       if (is_positive(lit)) {
         this_clause_satisfied |= lit_var_assignments;
@@ -111,8 +108,8 @@ void propagate_gate(bitvector_map<Bits, Alignment>& assignment_by_var,
 }
 
 
-template <typename ClauseHandle, std::size_t Bits, std::size_t Alignment>
-void propagate_structure(bitvector_map<Bits, Alignment>& assignment_by_var,
+template <typename ClauseHandle>
+void propagate_structure(bitvector_map& assignment_by_var,
                          gate_structure<ClauseHandle> const& structure)
 {
   std::vector<gate<ClauseHandle>> const& gates = structure.gates;

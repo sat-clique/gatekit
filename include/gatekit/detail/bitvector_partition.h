@@ -29,15 +29,12 @@ public:
     }
   }
 
-  template <std::size_t Bits, std::size_t Alignment>
-  void add(bitvector_map<Bits, Alignment> const& bv_map)
+  void add(bitvector_map const& bv_map)
   {
     assert(bv_map.size() == m_hashes.size());
 
-    using bitvector_t = bitvector<Bits, Alignment>;
-
     for (hash_entry& current : m_hashes) {
-      bitvector_t const& bv = bv_map[current.index];
+      bitvector const& bv = bv_map[current.index];
       current.pos_hash.add(bv);
       current.neg_hash.add(~bv);
       current.stuck_positive &= bv.is_all_one();

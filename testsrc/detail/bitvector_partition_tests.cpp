@@ -70,9 +70,9 @@ MATCHER_P(HasEquivalencies, expected, "")
   return true;
 };
 
-auto create_bitvector_map_with_distinct_signatures() -> bitvector_map<>
+auto create_bitvector_map_with_distinct_signatures() -> bitvector_map
 {
-  bitvector_map<> result{8};
+  bitvector_map result{8};
 
   for (std::size_t idx = 0; idx < result.size(); ++idx) {
     result[idx].fill(idx + 1);
@@ -109,7 +109,7 @@ TEST(bitvector_partition_tests, when_signatures_are_equivalent_partitions_are_cr
 {
   bitvector_sequence_partition under_test{8};
 
-  bitvector_map<> input = create_bitvector_map_with_distinct_signatures();
+  bitvector_map input = create_bitvector_map_with_distinct_signatures();
   input[0].fill(123ull);
   input[1].fill(100ull);
   input[2].fill(~10ull);
