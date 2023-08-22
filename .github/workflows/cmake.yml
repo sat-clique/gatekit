@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGATEKIT_TEST_ENABLE_SANITIZERS=ON
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DGATEKIT_TEST_ENABLE_SANITIZERS=ON -DGATEKIT_ENABLE_TESTS=ON
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
@@ -25,3 +25,4 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       run: bin/gatekit-tests
+
